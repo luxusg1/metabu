@@ -1,1 +1,4 @@
 .idea
+dist
+metabu.egg-info
+test.ipynb
