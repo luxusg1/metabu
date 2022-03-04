@@ -2,3 +2,5 @@
 dist
 metabu.egg-info
 test.ipynb
+build
+metabu/__pycache__
