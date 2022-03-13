@@ -1,10 +1,11 @@
 import numpy as np
 import torch
-from metabu.relational_autoencoders.Methods import prae
+from sklearn.cluster import AgglomerativeClustering
 from sklearn.manifold import MDS
 from sklearn.preprocessing import MinMaxScaler
+
+from metabu.relational_autoencoders.Methods import prae
 from metabu.utils import intrinsic_estimator
-from sklearn.cluster import AgglomerativeClustering
 
 
 def remove_outlier(labels, datasets_has_priors, cost_matrix):

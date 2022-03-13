@@ -1,22 +1,8 @@
-import numpy as np
-from sklearn.compose import ColumnTransformer
-from sklearn.linear_model import LinearRegression
 import math
+
+import numpy as np
 import pandas as pd
-
-from sklearn.preprocessing import StandardScaler, OneHotEncoder
-
-
-def normalize_metafeatures(df, return_moments=False):
-    list_columns = list(df.columns)
-    list_columns_wo_tid = [_ for _ in list_columns if _ != "task_id"]
-    X = df[list_columns_wo_tid].values
-    mean = np.nanmean(X, axis=0)
-    std = np.nanstd(X, axis=0)
-    if return_moments:
-        return df.fillna(0), (mean, std)
-    df[list_columns_wo_tid] = (X - mean) / (std + 1e-3)
-    return df.fillna(0)
+from sklearn.linear_model import LinearRegression
 
 
 def intrinsic_estimator(matrix_distance):
@@ -44,38 +30,25 @@ def intrinsic_estimator(matrix_distance):
     return math.ceil(intrinsic)
 
 
-def get_significative_best(data, k):
+def get_significative_best(data, k, ranking_column_name):
     if 'predictive_performance' in data.columns:
         scores = data.predictive_performance.values
     else:
-        scores = data.predictive_accuracy.values
-    threshold = np.percentile(scores, q=100 - k)
+        scores = data[ranking_column_name].values
+
+    threshold = np.percentile(scores, q=100-k)
     idx = np.where(scores >= threshold)[0]
     return data.iloc[idx]
 
 
-def get_top_k_target(df, list_tid, k):
+def get_top_k_target(df, list_tid, k, ranking_column_name):
     topk_dataset = []
     weights = []
     for it, tid in enumerate(list_tid):
-        tmp = get_significative_best(df[df.task_id == tid].copy(), k)
+        tmp = get_significative_best(df[df.task_id == tid].copy(), k, ranking_column_name)
         if tmp.shape[0] == 0: raise Exception(
             "Do not have enough sampling on dataset tid:{}. Only {} samples".format(tid, tmp.shape[0]))
         topk_dataset.append(tmp)
     return pd.concat(topk_dataset, axis=0)
-
-
-def get_target_preprocessor(df):
-    df_temp = df.drop(['task_id'], axis=1)
-    numerical_ix = df_temp.select_dtypes(include=['int64', 'float64']).columns
-    categorical_ix = df_temp.select_dtypes(include=['object', 'bool']).columns
-    numeric_transformer = StandardScaler()
-    categorical_transformer = OneHotEncoder(handle_unknown='error', sparse=False)
-    preprocessor = ColumnTransformer(
-        transformers=[
-            ('num', numeric_transformer, numerical_ix),
-            ('cat', categorical_transformer, categorical_ix)])
-
-    return preprocessor.fit(df)
 
 
