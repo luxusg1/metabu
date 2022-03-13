@@ -5,6 +5,11 @@ If you have any questions about code or the paper, we are happy to help you!
 We use the implementation of the ICML 2020 work **"Learning Autoencoders with Relational Regularization"** [https://arxiv.org/pdf/2002.02913.pdf] 
 to compute the fused gromov loss.
 
+
+![alt text](illustration_metabu.png "Title")
+
+
+
 # Intallation
 First, you must install all required package using: 
 
