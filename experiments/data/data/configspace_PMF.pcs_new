@@ -1,0 +1,130 @@
+model categorical {xgradient_boosting, bernoulli_nb, decision_tree, extra_trees, gradient_boosting, k_nearest_neighbors, lda, libsvm_svc, multinomial_nb, qda, random_forest, gaussian_nb} [random_forest]
+pre-processor categorical {pca, polynomial} [pca]
+
+
+
+pca_keep_variance real [0.5, 0.9999] [0.9999]
+pca_whiten integer [0, 1][0]
+pca_keep_variance | pre-processor == pca
+pca_whiten | pre-processor == pca
+
+
+polynomial_degree integer [2, 3] [2]
+polynomial_include_bias integer [0, 1][1]
+polynomial_interaction_only integer [0, 1][0]
+polynomial_degree | pre-processor == polynomial
+polynomial_include_bias | pre-processor == polynomial
+polynomial_interaction_only | pre-processor == polynomial
+
+lda_shrinkage categorical {None, auto, manual} [None]
+lda_n_components integer [1, 250] [1]
+lda_tol real [1e-05, 0.1] [0.0001]log
+lda_shrinkage_factor real [0.0, 1.0] [0.5]
+lda_shrinkage | model == lda
+lda_tol | model == lda
+lda_n_components | model == lda
+lda_shrinkage_factor | lda_shrinkage == manual
+
+
+xgradient_boosting_subsample real [0.01, 1.0] [0.1]
+xgradient_boosting_learning_rate real [0.01, 1.0] [0.1]log
+xgradient_boosting_max_depth integer [1, 10] [1]
+xgradient_boosting_n_estimators integer [50, 500] [50]
+xgradient_boosting_min_child_weight integer [1, 20] [1]
+xgradient_boosting_subsample | model == xgradient_boosting
+xgradient_boosting_learning_rate | model == xgradient_boosting
+xgradient_boosting_max_depth | model == xgradient_boosting
+xgradient_boosting_n_estimators | model == xgradient_boosting
+xgradient_boosting_min_child_weight | model == xgradient_boosting
+
+
+qda_reg_param real [0.0, 10.0] [0.0]
+qda_reg_param | model == qda
+
+
+extra_trees_bootstrap integer [0, 1][0]
+extra_trees_criterion categorical {gini, entropy} [gini]
+extra_trees_max_features real [0.5, 5] [2]
+extra_trees_min_samples_leaf integer [1, 20] [1]
+extra_trees_min_samples_split integer [2, 20] [2]
+extra_trees_n_estimators integer [50, 500] [100]
+
+extra_trees_bootstrap | model == extra_trees
+extra_trees_criterion | model == extra_trees
+extra_trees_max_features | model == extra_trees
+extra_trees_n_estimators | model == extra_trees
+extra_trees_min_samples_leaf | model == extra_trees
+extra_trees_min_samples_split | model == extra_trees
+
+
+decision_tree_criterion categorical {gini, entropy} [gini]
+decision_tree_max_depth real [0.0, 2.0] [0.5]
+decision_tree_min_samples_leaf integer [1, 20] [1]
+decision_tree_min_samples_split integer [2, 20] [2]
+decision_tree_criterion | model == decision_tree
+decision_tree_max_depth | model == decision_tree
+decision_tree_min_samples_leaf | model == decision_tree
+decision_tree_min_samples_split | model == decision_tree
+
+gradient_boosting_learning_rate real [0.01, 1.0] [0.1]log
+gradient_boosting_n_estimators integer [50, 500] [100]
+gradient_boosting_max_depth integer [1, 10] [5]
+gradient_boosting_min_samples_leaf integer [1, 20] [1]
+gradient_boosting_min_samples_split integer [2, 20] [2]
+gradient_boosting_subsample real [0.01, 1.0] [0.1]log
+gradient_boosting_max_features real [0.5, 5] [1]
+gradient_boosting_learning_rate | model == gradient_boosting
+gradient_boosting_n_estimators | model == gradient_boosting
+gradient_boosting_max_depth | model == gradient_boosting
+gradient_boosting_min_samples_split | model == gradient_boosting
+gradient_boosting_min_samples_leaf | model == gradient_boosting
+gradient_boosting_subsample | model == gradient_boosting
+gradient_boosting_max_features | model == gradient_boosting
+
+
+k_nearest_neighbors_n_neighbors integer [1, 100] [1]log
+k_nearest_neighbors_p integer [1, 2] [2]
+k_nearest_neighbors_weights categorical {uniform, distance} [uniform]
+k_nearest_neighbors_n_neighbors | model == k_nearest_neighbors
+k_nearest_neighbors_p | model == k_nearest_neighbors
+k_nearest_neighbors_weights | model == k_nearest_neighbors
+
+
+multinomial_nb_alpha real [0.01, 100.0] [1.0]log
+multinomial_nb_fit_prior integer [0, 1][1]
+multinomial_nb_alpha | model == multinomial_nb
+multinomial_nb_fit_prior | model == multinomial_nb
+
+
+libsvm_svc_C real [0.03125, 32768.0] [1.0]log
+libsvm_svc_kernel categorical {rbf, poly, sigmoid} [rbf]
+libsvm_svc_gamma real [3.0517578125e-05, 8.0] [0.1]log
+libsvm_svc_shrinking integer [0, 1][1]
+libsvm_svc_tol real [1e-05, 0.1] [0.1]log
+libsvm_svc_coef0 real [-1.0, 1.0] [0.0]
+libsvm_svc_degree integer [1, 5] [3]
+libsvm_svc_C | model == libsvm_svc
+libsvm_svc_gamma | model == libsvm_svc
+libsvm_svc_kernel | model == libsvm_svc
+libsvm_svc_shrinking | model == libsvm_svc
+libsvm_svc_tol | model == libsvm_svc
+libsvm_svc_coef0 | libsvm_svc_kernel in {poly, sigmoid}
+libsvm_svc_degree | libsvm_svc_kernel == poly
+
+
+random_forest_criterion categorical {gini, entropy} [gini]
+random_forest_max_features real [0.5, 5.0] [0.5]
+random_forest_min_samples_leaf integer [1, 20] [1]
+random_forest_min_samples_split integer [2, 20] [2]
+random_forest_bootstrap integer [0, 1][1]
+random_forest_bootstrap | model == random_forest
+random_forest_criterion | model == random_forest
+random_forest_max_features | model == random_forest
+random_forest_min_samples_leaf | model == random_forest
+random_forest_min_samples_split | model == random_forest
+
+
+bernoulli_nb_alpha real [0.01, 100.0] [1.0]log
+bernoulli_nb_fit_prior integer [0, 1][1]
+bernoulli_nb_alpha | model == bernoulli_nb
+bernoulli_nb_fit_prior | model == bernoulli_nb

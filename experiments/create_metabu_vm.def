@@ -1,0 +1,33 @@
+Bootstrap: docker
+From: circleci/python:3.8
+
+%post
+    apt-get install -y build-essential
+    apt-get install -y swig
+    cd /opt
+    pip install --progress-bar off -U pip
+    pip install --progress-bar off -U setuptools
+    pip install --progress-bar off -U numpy>=1.9.0
+    pip install --progress-bar off -U pandas>=1.0
+    pip install --progress-bar off -U POT==0.7.0
+    pip install --progress-bar off -U scikit-optimize==0.8.1
+     pip install --progress-bar off -U scipy>=0.14.1
+    pip install --progress-bar off -U joblib
+    pip install --progress-bar off -U scikit-learn
+    pip install --progress-bar off -U liac-arff
+    pip install --progress-bar off -U pyDOE
+    pip install --progress-bar off -U auto-sklearn==0.12.7
+    pip install --progress-bar off -U seaborn
+    pip install --progress-bar off -U hydra-core==1.0.0
+    pip install --progress-bar off -U hydra-ax-sweeper
+    pip install --progress-bar off -U hydra-joblib-launcher
+    pip install --progress-bar off -U openml==0.12.0
+    pip install --progress-bar off -U pymfe==0.4.1
+    pip install --progress-bar off -U submitit
+
+    echo "Metabu VM created :)"
+
+%test
+    python -c "import metabu"
+
+%runscript
