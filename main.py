@@ -1,17 +1,20 @@
-import pandas as pd
-import metabu
 import argparse
 import os
 
+import pandas as pd
+
+from metabu.learn_metafeatures import get_learned_metafeatures
+from metabu.utils import get_top_k_target
+
 '''
-metafeatures and target are dataframe object and must have task_id columns
+metafeatures and target are dataframe object and must have task_id column
 
 '''
 
 
 def train_metabu(metafeatures, target_representation, learning_rate, top_k, alpha, ranking_column_name):
-    top_k_target = metabu.get_top_k_target(target_representation, target_representation.task_id.unique(), top_k,
-                                           ranking_column_name)
+    top_k_target = get_top_k_target(target_representation, target_representation.task_id.unique(), top_k,
+                                    ranking_column_name)
 
     to_remove_datasets = set(list(top_k_target.task_id.unique())) - set(list(metafeatures.task_id.unique()))
     for id in list(to_remove_datasets):
@@ -19,11 +22,11 @@ def train_metabu(metafeatures, target_representation, learning_rate, top_k, alph
 
     mfe = metafeatures.set_index('task_id')
     datasets_has_priors_use_for_train = top_k_target.task_id.unique()
-    model, metabu_mf = metabu.get_learned_metafeatures(datasets_has_priors_use_for_train=datasets_has_priors_use_for_train,
-                                                       train_metafeatures=mfe, top_k_dataset=top_k_target,
-                                                       learning_rate=0.001,
-                                                       alpha=0.5,
-                                                       ranking_column_name=ranking_column_name)
+    model, metabu_mf = get_learned_metafeatures(datasets_has_priors_use_for_train=datasets_has_priors_use_for_train,
+                                                train_metafeatures=mfe, top_k_dataset=top_k_target,
+                                                learning_rate=0.001,
+                                                alpha=0.5,
+                                                ranking_column_name=ranking_column_name)
 
     metabu_mf = pd.DataFrame(metabu_mf)
     metabu_mf['task_id'] = datasets_has_priors_use_for_train

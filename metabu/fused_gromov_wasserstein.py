@@ -26,7 +26,10 @@ def train_fused_gromov_wasserstein(data_train, cost_matrix, lr=0.001, seed=42,
     alpha = kwargs.get("alpha", 0.5)
     print(kwargs, l1, alpha)
 
+
+
     datasets_has_priors_use_for_train = kwargs["datasets_has_priors_use_for_train"]
+    print(len(datasets_has_priors_use_for_train))
     N_old = len(datasets_has_priors_use_for_train)
     cluster = AgglomerativeClustering(affinity="precomputed", linkage="complete", n_clusters=5)
     cluster.fit(cost_matrix)

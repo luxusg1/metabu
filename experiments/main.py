@@ -24,6 +24,7 @@ from utils.metafeatures import MetaFeatures
 import openmlpimp
 
 import openml
+from neighbors import get_neighbors_wrt_metabu_mf
 
 openml.config.cache_directory = os.path.expanduser('~/openml_cache/')
 openml.config.logger.propagate = False
@@ -157,13 +158,20 @@ def run(config):
                        :config.searchParams.nb_neighbors_datasets]
     elif config.metafeatures == "learned":
         import json
-        with open(os.path.join(config.otherParams.all_cache_dir, "nearest", "best",
+        if os.path.isfile(os.path.join(config.otherParams.all_cache_dir, "nearest",
                                "general_statistical_info-theory_complexity_concept_itemset_clustering_landmarking_model-based",
-                               "tid_{}_{}.json".format(task_id, config.classifier.classifier)),
-                  'r') as json_file:
-            nearest_task = json.load(json_file)
-        nearest_task = [dt for dt in nearest_task if dt in datasets_has_priors][
-                       :config.searchParams.nb_neighbors_datasets]
+                               "tid_{}_{}.json".format(task_id, config.classifier.classifier))):
+            with open(os.path.join(config.otherParams.all_cache_dir, "nearest",
+                                   "general_statistical_info-theory_complexity_concept_itemset_clustering_landmarking_model-based",
+                                   "tid_{}_{}.json".format(task_id, config.classifier.classifier)),
+                      'r') as json_file:
+                nearest_task = json.load(json_file)
+            nearest_task = [dt for dt in nearest_task if dt in datasets_has_priors][
+                           :config.searchParams.nb_neighbors_datasets]
+        else:
+            nearest_task = get_neighbors_wrt_metabu_mf(task_id, config.classifier.classifier, config.otherParams.all_cache_dir)
+            nearest_task = [dt for dt in nearest_task if dt in datasets_has_priors][
+                           :config.searchParams.nb_neighbors_datasets]
 
     distribution = Distribution(nb_top_hp=config.searchParams.top_fraction_to_consider,
                                 metafeatures=config.metafeatures,

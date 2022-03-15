@@ -1,4 +1,6 @@
-from metabu import train_fused_gromov_wasserstein, get_cost_matrix_distribution
+from metabu.prior_distance import get_cost_matrix_distribution
+from metabu.fused_gromov_wasserstein import train_fused_gromov_wasserstein
+
 import numpy as np
 
 

@@ -1,3 +1,5 @@
+import sys
+sys.path.append('..')
 import os
 import pickle
 
@@ -5,8 +7,8 @@ import numpy as np
 import pandas as pd
 from pymfe.mfe import MFE
 
-from experiments.metafeatures.exctractor import normalize_metafeatures, get_possible_groups
-from experiments.utils.metafeatures import MetaFeatures
+from .exctractor import normalize_metafeatures, get_possible_groups
+from utils.metafeatures import MetaFeatures
 
 
 def augment_dataset(task_id, metafeatures, metafeatures_confidence_interval, size):
