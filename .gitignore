@@ -5,3 +5,4 @@ test.ipynb
 build
 metabu/__pycache__
 __pycache__
+experiments/data/nearest/*
