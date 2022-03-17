@@ -23,16 +23,16 @@ Then install metabu using :
 To train metabu metafeatures, run the following command:
 
 ```
-python main.py 
+python metabu/train.py 
             --basic_representation_file = <the basic representation file> # csv file
             --target_representation_file = <the target representation file> # csv file
             --store = <the file to store the Metabu meta-features> 
             --ranking_column_name = <the name of column to rank the target representation in the target representation file>
 ```
 
-All Options available on `main.py` can be show using help option :
+All Options available on `train.py` can be show using help option :
 
-`python main.py --help `
+`python metabu/train.py --help `
 
 
 NB :
