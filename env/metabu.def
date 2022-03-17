@@ -10,10 +10,8 @@ From: circleci/python:3.8
     pip install --progress-bar off -U numpy
     pip install --progress-bar off -U pandas>=1.0
     pip install --progress-bar off -U torch>=1.7.1
-    pip install --torchvision  off -U torchvision>=0.9.1
     pip install --progress-bar off -U POT==0.7.0
     pip install --progress-bar off -U scikit-optimize==0.8.1
-
 
 
     echo "install metabu"
