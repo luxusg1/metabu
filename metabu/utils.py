@@ -3,6 +3,7 @@ import math
 import numpy as np
 import pandas as pd
 from sklearn.linear_model import LinearRegression
+import ot
 
 
 def intrinsic_estimator(matrix_distance):
@@ -36,19 +37,18 @@ def get_significative_best(data, k, ranking_column_name):
     else:
         scores = data[ranking_column_name].values
 
-    threshold = np.percentile(scores, q=100-k)
+    threshold = np.percentile(scores, q=100 - k)
     idx = np.where(scores >= threshold)[0]
     return data.iloc[idx]
 
 
-def get_top_k_target(df, list_tid, k, ranking_column_name):
-    topk_dataset = []
-    weights = []
-    for it, tid in enumerate(list_tid):
-        tmp = get_significative_best(df[df.task_id == tid].copy(), k, ranking_column_name)
-        if tmp.shape[0] == 0: raise Exception(
-            "Do not have enough sampling on dataset tid:{}. Only {} samples".format(tid, tmp.shape[0]))
-        topk_dataset.append(tmp)
-    return pd.concat(topk_dataset, axis=0)
+def wasserstein_distance(distribution_a, distribution_b, return_map_matrix=False):
+    M = ot.dist(distribution_a, distribution_b)
+    M /= M.max()
+    ns = len(distribution_a)
+    nt = len(distribution_b)
+    a, b = np.ones((ns,)) / ns, np.ones((nt,)) / nt
+    G0 = ot.emd(a, b, M)
 
-
+    if return_map_matrix: return (G0 * M).sum(), G0
+    return (G0 * M).sum()

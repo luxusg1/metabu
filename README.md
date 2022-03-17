@@ -25,10 +25,9 @@ To train metabu metafeatures, run the following command:
 
 ```
 python main.py 
-            --metafetures_file = <the metafeatures file> # csv file
+            --basic_representation_file = <the basic representation file> # csv file
             --target_representation_file = <the target representation file> # csv file
             --store = <the file to store the Metabu meta-features> 
-            --top_k = <the number of top target_representation_file used in the traning>
             --ranking_column_name = <the name of column to rank the target representation in the target representation file>
 ```
 
@@ -37,9 +36,8 @@ All Options available on `main.py` can be show using help option :
 `python main.py --help `
 
 
-NB : 
-- Note that both the `metafetures_file` and `target_representation_file` must have a column named `task_id` to refer all data corresponding to this datasets.
-- If a `task_id` is missing in one the file we don't use it to train the metabu metafeatures and use only the remaining `task_id`  available in both file.
+NB :
+Note that both the `basic_representation_file` and `target_representation_file` must have a column named `task_id` to refer all data corresponding to this datasets.
 
 ## Cite :
 If you use Metabu in your scientific project or publication, we would appreciate citations.
