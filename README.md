@@ -10,12 +10,16 @@ This is the Official code for ICLR 2022 paper **"Learning meta-features for Auto
 
 
 ## Installation
-First, you must install all required package using: 
+Install with pip:
 
 ```bash
 pip install -r requirements.txt
 python setup.py install
 ```
+
+Use Singularity:
+* build *local* container with definition file `env/metabu.def`.
+* fetch *remote* container from (coming soon).
 
 ## Usage
 
