@@ -1,9 +1,26 @@
 import math
+from multiprocessing import Pool
 
 import numpy as np
-import pandas as pd
-from sklearn.linear_model import LinearRegression
 import ot
+from sklearn.decomposition import PCA
+from sklearn.linear_model import LinearRegression
+from sklearn.metrics import ndcg_score
+from sklearn.preprocessing import StandardScaler
+from tqdm import tqdm
+
+
+def wasserstein_distance(distributions, return_map_matrix=False):
+    distribution_a, distribution_b = distributions
+    M = ot.dist(distribution_a, distribution_b)
+    M /= M.max()
+    ns = len(distribution_a)
+    nt = len(distribution_b)
+    a, b = np.ones((ns,)) / ns, np.ones((nt,)) / nt
+    G0 = ot.emd(a, b, M)
+
+    if return_map_matrix: return (G0 * M).sum(), G0
+    return (G0 * M).sum()
 
 
 def intrinsic_estimator(matrix_distance):
@@ -31,24 +48,54 @@ def intrinsic_estimator(matrix_distance):
     return math.ceil(intrinsic)
 
 
-def get_significative_best(data, k, ranking_column_name):
-    if 'predictive_performance' in data.columns:
-        scores = data.predictive_performance.values
-    else:
-        scores = data[ranking_column_name].values
+def get_cost_matrix(target_repr, task_ids, verbose, n_cpus=1):
+    matrix_ot_distance = []
+    for task_a in tqdm(task_ids, disable=not verbose):
+        temp_distance = []
+        p = Pool(n_cpus)
+        params = [
+            (target_repr.loc[target_repr.task_id == task_a].drop(
+                ['task_id'], axis=1).values,
+             target_repr.loc[target_repr.task_id == task_b].drop(
+                 ['task_id'], axis=1).values
+             ) for task_b in task_ids
+        ]
+        temp_distance = p.map(wasserstein_distance, params)
 
-    threshold = np.percentile(scores, q=100 - k)
-    idx = np.where(scores >= threshold)[0]
-    return data.iloc[idx]
+        # for task_b in task_ids:
+        #     target_representation_for_task_a = target_repr.loc[target_repr.task_id == task_a].drop(
+        #         ['task_id'], axis=1).values
+        #     target_representation_for_task_b = target_repr.loc[target_repr.task_id == task_b].drop(
+        #         ['task_id'], axis=1).values
+        #     target_distance_between_task_a_b = wasserstein_distance(target_representation_for_task_a,
+        #                                                             target_representation_for_task_b)
+        #     temp_distance.append(target_distance_between_task_a_b)
+        matrix_ot_distance.append(temp_distance)
+
+    matrix_ot_distance = np.array(matrix_ot_distance)
+    np.fill_diagonal(matrix_ot_distance, 0)
+    matrix_ot_distance /= matrix_ot_distance.max()
+    for i in range(matrix_ot_distance.shape[0]):
+        for j in range(i):
+            matrix_ot_distance[i, j] = matrix_ot_distance[j, i]
+
+    return matrix_ot_distance
 
 
-def wasserstein_distance(distribution_a, distribution_b, return_map_matrix=False):
-    M = ot.dist(distribution_a, distribution_b)
-    M /= M.max()
-    ns = len(distribution_a)
-    nt = len(distribution_b)
-    a, b = np.ones((ns,)) / ns, np.ones((nt,)) / nt
-    G0 = ot.emd(a, b, M)
+def get_ndcg_score(dist_pred, dist_true, k=10):
+    pred_rank = dist_pred.argsort().argsort()
+    true_rank = dist_true.argsort().argsort()
 
-    if return_map_matrix: return (G0 * M).sum(), G0
-    return (G0 * M).sum()
+    pred_rank[np.where(pred_rank < k)] = 1
+    pred_rank[np.where(pred_rank >= k)] = 0
+    true_rank[np.where(true_rank < k)] = 1
+    true_rank[np.where(true_rank >= k)] = 0
+
+    return ndcg_score(y_true=true_rank, y_score=pred_rank, k=k)
+
+
+def get_pca_importances(data):
+    data_scaled = StandardScaler().fit_transform(data)
+    pca = PCA()
+    pca.fit_transform(data_scaled)
+    return np.abs(pca.components_[0])

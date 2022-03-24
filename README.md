@@ -1,5 +1,5 @@
 # Metabu - Learning meta-features
-This is the Official code for ICLR 2022 paper **"Learning meta-features for AutoML"**.
+This is the Official code for ICLR 2022 paper **"Learning meta-features for AutoML"**, *Herilalaina Rakotoarison and Louisot Milijaona and Andry Rasoanaivo and Michèle Sebag and Marc Schoenauer*.
 
 
 ![alt text](illustration_metabu.png "Title")
@@ -9,45 +9,49 @@ This is the Official code for ICLR 2022 paper **"Learning meta-features for Auto
 > **This repository is still under active developement.**
 
 
-# Intallation
+# Installation
 First, you must install all required package using: 
 
-`pip install -r requirements.txt`
-
-Then install metabu using :
-
-`python setup.py install`
-
-## Run training of Metabu meta-features
-
-To train metabu metafeatures, run the following command:
-
-```
-python metabu/train.py 
-            --basic_representation_file = <the basic representation file> # csv file
-            --target_representation_file = <the target representation file> # csv file
-            --store = <the file to store the Metabu meta-features> 
-            --ranking_column_name = <the name of column to rank the target representation in the target representation file>
+```bash
+pip install -r requirements.txt
+python setup.py install
 ```
 
-All Options available on `train.py` can be show using help option :
+## Usage
 
-`python metabu/train.py --help `
+Simple to use:
+
+```python
+from metabu import Metabu
+
+basic_representations = pd.read_csv(...)
+target_representations = pd.read_csv(...)
+metabu = Metabu()
+metabu.train(basic_reprs=basic_representations,
+             target_reprs=target_representations,
+             column_id="task_id")
+metabu.predict(basic_reprs=basic_representations)
+metabu.get_importances()
+```
 
 
-NB :
-Note that both the `basic_representation_file` and `target_representation_file` must have a column named `task_id` to refer all data corresponding to this datasets.
+Try: `cd examples; python metabu_adaboost.py`
 
 Feel free to create an issue if you have questions.
 
+
+## Experiments
+
+> Script to reproduce experiments will be available under the **experiments** branch.
+
+
 ## Credits
 
-We use the implementation of the ICML 2020 work **"Learning Autoencoders with Relational Regularization"** [https://arxiv.org/pdf/2002.02913.pdf] 
-to compute the Fused Gromov Wasserstein loss.
+* We use the implementation of the ICML 2020 work **"Learning Autoencoders with Relational Regularization"** [https://arxiv.org/pdf/2002.02913.pdf] 
+to compute the Fused-Gromov-Wasserstein distance.
+* We also grateful to the maintainers and contributors of the Python libraries in *requirements.txt*.
 
-## Citation
-If you use Metabu in your scientific project or publication, we would appreciate citations.
-
+## Cite Metabu
 
 ``` 
 @inproceedings{rakotoarison2022learning,

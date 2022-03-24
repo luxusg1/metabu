@@ -1,8 +1,15 @@
+"""
+This file is hard copied from https://github.com/HongtengXu/Relational-AutoEncoders.
+
+An implementation of:
+    Learning Autoencoders with Relational Regularization
+    Hongteng Xu, Dixin Luo, Ricardo Henao, Svati Shah, Lawrence Carin
+    ICML 2020
+"""
+
 import torch
 from torch import nn
 from torch import optim
-#import Methods.evaluation as evaluation
-#import Methods.models as method
 
 
 class Prior(nn.Module):
@@ -163,12 +170,10 @@ def fgw_discrepancy(mu, z_mu, logvar, z_logvar, device, beta):
     return d_fgw
 
 
-def fgw(source, target, device, beta, cost_source_target, M=None):
+def fgw(source, target, device, alpha, M=None):
     cost_source = distance_matrix(source, source)
     cost_target = distance_matrix(target, target)
-
-    if cost_source_target is None:
-        cost_source_target = distance_matrix(source, target)
+    cost_source_target = distance_matrix(source, target)
 
     ns = cost_source.size(0)
     nt = cost_target.size(0)
@@ -184,7 +189,7 @@ def fgw(source, target, device, beta, cost_source_target, M=None):
         tran = M
     dual = (torch.ones(ns, 1) / ns).to(device)
     for m in range(10):
-        cost = beta * cost_mat(cost_source, cost_target, tran) + (1 - beta) * cost_source_target
+        cost = alpha * cost_mat(cost_source, cost_target, tran) + (1 - alpha) * cost_source_target
         kernel = torch.exp(-cost / torch.max(torch.abs(cost))) * tran
         b = p_t / (torch.t(kernel) @ dual)
         for i in range(5):
@@ -194,10 +199,9 @@ def fgw(source, target, device, beta, cost_source_target, M=None):
     if torch.isnan(tran).sum() > 0:
         tran = (torch.ones(ns, nt) / (ns * nt)).to(device)
 
-    cost = beta * cost_mat(cost_source, cost_target, tran.detach().data) + (1 - beta) * cost_source_target
+    cost = alpha * cost_mat(cost_source, cost_target, tran.detach().data) + (1 - alpha) * cost_source_target
     d_fgw = (cost * tran.detach().data).sum()
     return d_fgw
-
 
 
 def train(model, prior, train_loader, optimizer, device, epoch, args):
@@ -220,11 +224,11 @@ def train(model, prior, train_loader, optimizer, device, epoch, args):
         if batch_idx % args.log_interval == 0:
             print('Train Model Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}'.format(
                 epoch, batch_idx * len(data), len(train_loader.dataset),
-                100. * batch_idx / len(train_loader), loss.item() / len(data)))
+                       100. * batch_idx / len(train_loader), loss.item() / len(data)))
 
     print('====> Epoch: {} Average RecLoss: {:.4f} RegLoss: {:.4f} TotalLoss: {:.4f}'.format(
         epoch, train_rec_loss / len(train_loader.dataset), train_reg_loss / len(train_loader.dataset),
-        (train_rec_loss + train_reg_loss) / len(train_loader.dataset)))
+               (train_rec_loss + train_reg_loss) / len(train_loader.dataset)))
 
 
 def test(model, prior, test_loader, device, args):
