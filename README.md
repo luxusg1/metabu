@@ -9,7 +9,7 @@ This is the Official code for ICLR 2022 paper **"Learning meta-features for Auto
 > **This repository is still under active developement.**
 
 
-# Installation
+## Installation
 First, you must install all required package using: 
 
 ```bash
