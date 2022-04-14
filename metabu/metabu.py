@@ -11,42 +11,40 @@ from metabu.utils import get_cost_matrix, intrinsic_estimator, get_pca_importanc
 
 class Metabu:
     """
-    Metabu
+    Metabu: learning meta-features.
 
     Parameters
     ----------
     alpha: float, default 0.5,
-        the trade-off parameter in fused_gromov_wasserstein distance
+        Trade-off parameter in FGW distance (eq. 1).
     lambda_reg: float, default 1e-3,
-        the regularization weight
+        L_1 regularization parameter (eq. 2).
     learning_rate: float, default 0.01,
-        parameter of ADAM optimizer
+        Learning rate used with ADAM optimizer.
     early_stopping_patience: int, default 10,
-        the training is stopped when successively early_stopping_patience no improvement are observed
+        Number of iterations without improvement.
     early_stopping_criterion_ndcg: int, default 10,
-        Only consider the highest early_stopping_criterion_ndcg scores in the ranking when computing ndcg. If None, use all outputs.
-    verbose: bool default True,
-        output print during the training phase if set to True
+        Trunc value of NDCG, e.g. NDCG@10.
+    verbose: bool, default True,
+        Print verbose.
     ncpus: int, default 1,
-        number of cpu used to train the Linear Model
-    device: str, choice:["cpu", "gpu"] default "cpu",
-        used device
+        Number of cpu used, especially, to compute pairwise distance of the target representations.
+    device: str, default "cpu",
+        Device used by PyTorch ("cpu" or "gpu").
     seed: int, default 42
-        variable for reproducibility
+        Seed for reproducibility.
 
 
 
 
     Attributes
     ----------
-
     mds : sklearn.manifold._mds.MDS, default None
-        multi dimensional scaling
+        Multi-dimensional scaling model trained afted step 2.
     intrinsic_dim : int, default None
-        the intrinsic dimension corresponding to the target representation
-    model : torch.nn.Linear, default None
-        The linear mapping of basic representation to metabu representation
-
+        Intrinsic dimension of the benchmark, see last paragraph of section 4.
+    psi : np.ndarray, default None
+        Linear mapping psi of the basic representation to the metabu representation, learned during step 3.
     """
 
     def __init__(self,
@@ -85,16 +83,18 @@ class Metabu:
 
         """
 
-        Train the Linear mapping of basic representation  to metabu representation
+        Train the linear mapping psi.
 
-        :param basic_reprs: the basic representation
-        :type basic_reprs: pandas.core.dataFrame
+        :param basic_reprs: basic representations
+        :type basic_reprs: pandas.core.DataFrame
 
-        :param target_reprs: the target representation
-        :type target_reprs: pandas.core.dataFrame
+        :param target_reprs: target representations
+        :type target_reprs: pandas.core.DataFrame
 
-        :param column_id: name of column which content the id of each datasets or tasks in the target_reprs dataframe
+        :param column_id: name of index column.
         :type column_id: str
+
+        :return self
 
         """
 
@@ -125,13 +125,14 @@ class Metabu:
             intrinsic_dim=self.intrinsic_dim,
             lambda_reg=self.lambda_reg,
             device=self.device, )
+        return self
 
     @property
     def psi(self) -> np.ndarray:
         """
-        Get the Linear mapping model weight as umpy array
+        Get the linear mapping psi.
 
-        :return model_weight: the weight of the Linear model
+        :return weight matrix, representing the trained linear model.
         :rtype: np.ndarray
 
         """
@@ -139,11 +140,13 @@ class Metabu:
 
     def predict(self, basic_reprs: pd.DataFrame) -> np.ndarray:
         """
-        predict the metabu representation corresponding to the given basic representation
+        Predict the Metabu representations given basic representations.
 
-        :param basic_reprs: The basic representation
+        :param basic_reprs: basic representations
+        :type basic_reprs: pandas.core.DataFrame
 
-        :return: metabu representation: the metabu representation
+        :return: Metabu representations
+        :rtype: np.ndarray
 
         """
         return np.dot(basic_reprs[self.basic_repr_labels].values, self.psi.T)
@@ -155,20 +158,25 @@ class Metabu:
                       test_ids: list,
                       train_ids: list) -> typing.Tuple[np.ndarray, np.ndarray]:
         """
+        Learn the linear mapping psi using task instances in train_ids. Then predict Metabu representations separately for train and test instances.
 
-        Train the Linear mapping of basic representation to metabu representation using all task in train_ids and
-        predict the metabu representation corresponding to the  basic representation for both tasks in test_ids and
-        train_ids
+        :param basic_reprs: basic representations
+        :type: pandas.core.DataFrame
 
-        :param basic_reprs: the basic representation
+        :param target_reprs: target representations
+        :type: pandas.core.DataFrame
 
-        :param target_reprs: the target representation
-        :param test_ids: list of test tasks (not use on the training step)
-        :param test_ids: list of test tasks (not use on the training step)
-        :param train_ids: list of train tasks (use on the training step)
-        :param column_id: name of column which content the id of each datasets or tasks in the target_reprs dataframe
+        :param train_ids: list of train instances
+        :type: np.ndarray
 
-        :return metabu representation: metabu representation corresponding to the training and testing tasks
+        :param test_ids: list of test instances
+        :type: np.ndarray
+
+        :param column_id: name of index column
+        :type: np.ndarray
+
+        :return Metabu representations of the training and testing instances
+        :rtype: Tuple[np.ndarray, np.ndarray]
         """
 
         basic_reprs_train = basic_reprs[basic_reprs[column_id].isin(train_ids)]
@@ -181,14 +189,10 @@ class Metabu:
     def get_importances(self) -> typing.Tuple[np.ndarray, typing.List[str]]:
 
         """
+        Get the importance scores of each basic representation column. The scores are extracted from the trained linear mapping psi.
 
-        Get the importance scores of each basic representation (each column of given the basic representation dataframe)
-        according to the resulted metabu representation. More the scores of one basic representation is high more this
-        basic representation is important for the concerned algorithm.
-
-        :return importance: importance score and importance labels for each basic representation of task
-
-
+        :return list of importance scores with the list of corresponding basic representation column.
+        :rtype: typing.Tuple[np.ndarray, typing.List[str]]
         """
         imp = get_pca_importances(self.mds.embedding_)
         idx_best = imp.argmax()
