@@ -10,42 +10,19 @@ from metabu.utils import get_cost_matrix, intrinsic_estimator, get_pca_importanc
 
 
 class Metabu:
-    """
-    Metabu: learning meta-features.
-
-    Parameters
-    ----------
-    alpha: float, default 0.5,
-        Trade-off parameter in FGW distance (eq. 1).
-    lambda_reg: float, default 1e-3,
-        L_1 regularization parameter (eq. 2).
-    learning_rate: float, default 0.01,
-        Learning rate used with ADAM optimizer.
-    early_stopping_patience: int, default 10,
-        Number of iterations without improvement.
-    early_stopping_criterion_ndcg: int, default 10,
-        Trunc value of NDCG, e.g. NDCG@10.
-    verbose: bool, default True,
-        Print verbose.
-    ncpus: int, default 1,
-        Number of cpu used, especially, to compute pairwise distance of the target representations.
-    device: str, default "cpu",
-        Device used by PyTorch ("cpu" or "gpu").
-    seed: int, default 42
-        Seed for reproducibility.
-
-
-
+    """Metabu: learning meta-features.
 
     Attributes
     ----------
-    mds : sklearn.manifold._mds.MDS, default None
+
+    mds : sklearn.manifold.mds.MDS, default None
         Multi-dimensional scaling model trained afted step 2.
     intrinsic_dim : int, default None
         Intrinsic dimension of the benchmark, see last paragraph of section 4.
     psi : np.ndarray, default None
         Linear mapping psi of the basic representation to the metabu representation, learned during step 3.
-    """
+
+   """
 
     def __init__(self,
                  alpha: float = 0.5,
@@ -57,6 +34,31 @@ class Metabu:
                  ncpus: int = 1,
                  device: str = "cpu",
                  seed: int = 42) -> None:
+        """
+
+        Parameters
+        ----------
+
+        alpha: float, default 0.5,
+            Trade-off parameter in FGW distance (eq. 1).
+        lambda_reg: float, default 1e-3,
+            L_1 regularization parameter (eq. 2).
+        learning_rate: float, default 0.01,
+            Learning rate used with ADAM optimizer.
+        early_stopping_patience: int, default 10,
+            Number of iterations without improvement.
+        early_stopping_criterion_ndcg: int, default 10,
+            Trunc value of NDCG, e.g. NDCG@10.
+        verbose: bool, default True,
+            Print verbose.
+        ncpus: int, default 1,
+            Number of cpu used, especially, to compute pairwise distance of the target representations.
+        device: str, default "cpu",
+            Device used by PyTorch ("cpu" or "gpu").
+        seed: int, default 42
+            Seed for reproducibility.
+
+        """
 
         self.early_stopping_criterion_ndcg = early_stopping_criterion_ndcg
         self.seed = seed
@@ -81,20 +83,24 @@ class Metabu:
               target_reprs: pd.DataFrame,
               column_id: str) -> None:
 
-        """
+        """Train the linear mapping psi.
 
-        Train the linear mapping psi.
+        Parameters
+        ----------
 
-        :param basic_reprs: basic representations
-        :type basic_reprs: pandas.core.DataFrame
+        basic_reprs : pandas.core.DataFrame
+            Basic representations.
 
-        :param target_reprs: target representations
-        :type target_reprs: pandas.core.DataFrame
+        target_reprs : pandas.core.DataFrame
+            Target representations.
 
-        :param column_id: name of index column.
-        :type column_id: str
+        column_id: str
+            Name of the index column.
 
-        :return self
+        Returns
+        -------
+
+        self
 
         """
 
@@ -129,24 +135,31 @@ class Metabu:
 
     @property
     def psi(self) -> np.ndarray:
-        """
-        Get the linear mapping psi.
+        """Get the linear mapping psi.
 
-        :return weight matrix, representing the trained linear model.
-        :rtype: np.ndarray
+        Returns
+        -------
+
+        psi : numpy.ndarray
+            Weight matrix, representing the trained linear model.
 
         """
         return self.model.weight.detach().cpu().numpy()
 
     def predict(self, basic_reprs: pd.DataFrame) -> np.ndarray:
-        """
-        Predict the Metabu representations given basic representations.
+        """Predict the Metabu representations given basic representations.
 
-        :param basic_reprs: basic representations
-        :type basic_reprs: pandas.core.DataFrame
+        Parameters
+        ----------
 
-        :return: Metabu representations
-        :rtype: np.ndarray
+        basic_reprs : pandas.core.DataFrame
+            Basic representations.
+
+        Returns
+        -------
+
+        metabu_reprs : np.ndarray
+            Metabu representations.
 
         """
         return np.dot(basic_reprs[self.basic_repr_labels].values, self.psi.T)
@@ -155,28 +168,38 @@ class Metabu:
                       basic_reprs: pd.DataFrame,
                       target_reprs: pd.DataFrame,
                       column_id: str,
-                      test_ids: list,
-                      train_ids: list) -> typing.Tuple[np.ndarray, np.ndarray]:
+                      train_ids: list,
+                      test_ids: list) -> typing.Tuple[np.ndarray, np.ndarray]:
         """
         Learn the linear mapping psi using task instances in train_ids. Then predict Metabu representations separately for train and test instances.
 
-        :param basic_reprs: basic representations
-        :type: pandas.core.DataFrame
+        Parameters
+        ----------
 
-        :param target_reprs: target representations
-        :type: pandas.core.DataFrame
+        basic_reprs : pandas.core.DataFrame
+            Basic representations.
 
-        :param train_ids: list of train instances
-        :type: np.ndarray
+        target_reprs : pandas.core.DataFrame
+            Target representations.
 
-        :param test_ids: list of test instances
-        :type: np.ndarray
+        column_id: str
+            Name of the index column.
 
-        :param column_id: name of index column
-        :type: np.ndarray
+        test_ids : list of int
+            List of testing instances.
 
-        :return Metabu representations of the training and testing instances
-        :rtype: Tuple[np.ndarray, np.ndarray]
+        test_ids : list of int
+            List of training instances.
+
+        Returns
+        -------
+
+        metabu_train : numpy.ndarray
+            Metabu representation of training instances.
+
+        metabu_test : numpy.ndarray
+            Metabu representation of testing instances.
+
         """
 
         basic_reprs_train = basic_reprs[basic_reprs[column_id].isin(train_ids)]
@@ -187,12 +210,19 @@ class Metabu:
         return self.predict(basic_reprs_train), self.predict(basic_reprs_test)
 
     def get_importances(self) -> typing.Tuple[np.ndarray, typing.List[str]]:
+        """Get the importance scores of each basic representation column.
 
-        """
-        Get the importance scores of each basic representation column. The scores are extracted from the trained linear mapping psi.
+        The scores are extracted from the trained linear mapping psi.
 
-        :return list of importance scores with the list of corresponding basic representation column.
-        :rtype: typing.Tuple[np.ndarray, typing.List[str]]
+        Returns
+        --------
+
+        importances: list of float
+            List of importance scores.
+
+        list_labels: list of str
+            List of corresponding basic representation column.
+
         """
         imp = get_pca_importances(self.mds.embedding_)
         idx_best = imp.argmax()

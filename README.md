@@ -60,7 +60,7 @@ to compute the Fused-Gromov-Wasserstein distance.
 ``` 
 @inproceedings{rakotoarison2022learning,
     title       = {Learning meta-features for Auto{ML}},
-    author      = {Herilalaina Rakotoarison and Louisot Milijaona and Andry RASOANAIVO and Michele Sebag and Marc Schoenauer},
+    author      = {Herilalaina Rakotoarison and Louisot Milijaona and Andry Rasoanaivo and Michele Sebag and Marc Schoenauer},
     booktitle   = {International Conference on Learning Representations},
     year        = {2022},
     url         = {https://openreview.net/forum?id=DTkEfj0Ygb8}

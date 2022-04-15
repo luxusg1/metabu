@@ -1,73 +1,32 @@
+
 <!DOCTYPE html>
-<html class="writer-html5" lang="en" >
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Installation &mdash; Learning Meta-features for AutoML</title><link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
-    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-  <!--[if lt IE 9]>
-    <script src="_static/js/html5shiv.min.js"></script>
-  <![endif]-->
-  <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
-        <script src="_static/jquery.js"></script>
-        <script src="_static/underscore.js"></script>
-        <script src="_static/doctools.js"></script>
-        <script src="_static/language_data.js"></script>
-    <script src="_static/js/theme.js"></script>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Metabu: Learning Meta-Features &#8212; Learning Meta-features for AutoML</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/readable.css" />
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" /> 
-</head>
+  </head><body>  
 
-<body class="wy-body-for-nav"> 
-  <div class="wy-grid-for-nav">
-    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
-      <div class="wy-side-scroll">
-        <div class="wy-side-nav-search" >
-            <a href="#" class="icon icon-home"> Metabu
-          </a>
-<div role="search">
-  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" />
-    <input type="hidden" name="check_keywords" value="yes" />
-    <input type="hidden" name="area" value="default" />
-  </form>
-</div>
-        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <!-- Local TOC -->
-              <div class="local-toc"><ul>
-<li><a class="reference internal" href="#">Installation</a></li>
-<li><a class="reference internal" href="#usage">Usage</a></li>
-<li><a class="reference internal" href="#experiments">Experiments</a></li>
-<li><a class="reference internal" href="#api">API</a></li>
-<li><a class="reference internal" href="#the-metabu-metabu-metabu-class">The <cite>metabu.metabu.Metabu</cite> class</a></li>
-<li><a class="reference internal" href="#cite-metabu">Cite Metabu</a></li>
-</ul>
-</div>
-        </div>
-      </div>
-    </nav>
-
-    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
-          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-          <a href="#">Metabu</a>
-      </nav>
-
-      <div class="wy-nav-content">
-        <div class="rst-content">
-          <div role="navigation" aria-label="Page navigation">
-  <ul class="wy-breadcrumbs">
-      <li><a href="#" class="icon icon-home"></a> &raquo;</li>
-      <li>Installation</li>
-      <li class="wy-breadcrumbs-aside">
-            <a href="_sources/index.rst.txt" rel="nofollow"> View page source</a>
-      </li>
-  </ul>
-  <hr/>
-</div>
-          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
-           <div itemprop="articleBody">
-             
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
   <div class="toctree-wrapper compound">
+</div>
+<div class="section" id="metabu-learning-meta-features">
+<h1>Metabu: Learning Meta-Features<a class="headerlink" href="#metabu-learning-meta-features" title="Permalink to this headline">¶</a></h1>
+<p>This work tackles the AutoML problem <span id="id1">[<a class="reference internal" href="#id13" title="Frank Hutter, Lars Kotthoff, and Joaquin Vanschoren, editors. Automated Machine Learning: Methods, Systems, Challenges. The Springer Series on Challenges in Machine Learning. Springer International Publishing, Cham, 2019. ISBN 9783030053178 9783030053185. URL: http://link.springer.com/10.1007/978-3-030-05318-5 (visited on 2021-09-08), doi:10.1007/978-3-030-05318-5.">HKV19</a>]</span>, aimed to automatically select an ML algorithm and its hyper-parameter configuration most appropriate to the dataset at hand. The proposed approach, MetaBu, learns new meta-features via an Optimal Transport procedure <span id="id2">[<a class="reference internal" href="#id11" title="Vayer Titouan, Nicolas Courty, Romain Tavenard, Chapel Laetitia, and Rémi Flamary. Optimal Transport for structured data with application on graphs. In Proceedings of the 36th International Conference on Machine Learning, 6275–6284. PMLR, May 2019. URL: https://proceedings.mlr.press/v97/titouan19a.html (visited on 2022-02-01).">TCT+19</a>]</span>, aligning the manually designed meta-features <span id="id3">[<a class="reference internal" href="#id12" title="Adriano Rivolli, Luís P. F. Garcia, Carlos Soares, Joaquin Vanschoren, and André C. P. L. F. de Carvalho. Meta-features for meta-learning. Knowledge-Based Systems, 240:108101, March 2022. URL: https://www.sciencedirect.com/science/article/pii/S0950705121011631 (visited on 2022-03-01), doi:10.1016/j.knosys.2021.108101.">RGS+22</a>]</span> with the space of distributions on the hyper-parameter configurations. MetaBu meta-features, learned once and for all, induce a topology on the set of datasets that is exploited to define a distribution of promising hyper-parameter configurations amenable to AutoML. Experiments on the OpenML CC-18 benchmark <span id="id4">[<a class="reference internal" href="#id10" title="Bernd Bischl, Giuseppe Casalicchio, Matthias Feurer, Frank Hutter, Michel Lang, Rafael G. Mantovani, Jan N. van Rijn, and Joaquin Vanschoren. OpenML Benchmarking Suites and the OpenML100. arXiv:1708.03731 [cs, stat], August 2017. arXiv: 1708.03731 version: 1. URL: http://arxiv.org/abs/1708.03731 (visited on 2021-09-16).">BCF+17</a>]</span> demonstrate that using MetaBu meta-features boosts the performance of state of the art AutoML systems, AutoSklearn <span id="id5">[<a class="reference internal" href="#id8" title="Matthias Feurer, Aaron Klein, Katharina Eggensperger, Jost Springenberg, Manuel Blum, and Frank Hutter. Efficient and Robust Automated Machine Learning. In Advances in Neural Information Processing Systems, volume 28. Curran Associates, Inc., 2015. URL: https://papers.nips.cc/paper/2015/hash/11d0e6287202fced83f79975ec59a3a6-Abstract.html (visited on 2021-09-08).">FKE+15</a>]</span> and Probabilistic Matrix Factorization <span id="id6">[<a class="reference internal" href="#id9" title="Nicolo Fusi, Rishit Sheth, and Melih Elibol. Probabilistic Matrix Factorization for Automated Machine Learning. In Advances in Neural Information Processing Systems, volume 31. Curran Associates, Inc., 2018. URL: https://proceedings.neurips.cc/paper/2018/hash/b59a51a3c0bf9c5228fde841714f523a-Abstract.html (visited on 2021-09-24).">FSE18</a>]</span>. Furthermore, the inspection of MetaBu meta-features gives some hints into when an ML algorithm does well. Finally, the topology based on MetaBu meta-features enables to estimate the intrinsic dimensionality of the OpenML benchmark w.r.t. a given ML algorithm or pipeline.</p>
+<a class="reference internal image-reference" href="_images/illustration_metabu.png"><img alt="_images/illustration_metabu.png" class="align-center" src="_images/illustration_metabu.png" style="width: 600px;" /></a>
 </div>
 <div class="section" id="installation">
 <h1>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h1>
@@ -76,15 +35,14 @@
 python setup.py install
 </pre></div>
 </div>
-<p>Use Singularity:</p>
+<p>or with Singularity:</p>
 <ul class="simple">
 <li><p>build <em>local</em> container with definition file <cite>env/metabu.def</cite>.</p></li>
 <li><p>fetch <em>remote</em> container from (coming soon).</p></li>
 </ul>
 </div>
-<div class="section" id="usage">
-<h1>Usage<a class="headerlink" href="#usage" title="Permalink to this headline">¶</a></h1>
-<p>Simple to use:</p>
+<div class="section" id="example">
+<h1>Example<a class="headerlink" href="#example" title="Permalink to this headline">¶</a></h1>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">metabu</span> <span class="kn">import</span> <span class="n">Metabu</span>
 
 <span class="n">basic_representations</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
@@ -104,158 +62,151 @@ python setup.py install
 </div>
 <div class="section" id="api">
 <h1>API<a class="headerlink" href="#api" title="Permalink to this headline">¶</a></h1>
-<div class="admonition tip">
-<p class="admonition-title">Tip</p>
-<p>All next cited parameters are also attributes of Metabu class.</p>
-</div>
-</div>
-<div class="section" id="the-metabu-metabu-metabu-class">
-<h1>The <cite>metabu.metabu.Metabu</cite> class<a class="headerlink" href="#the-metabu-metabu-metabu-class" title="Permalink to this headline">¶</a></h1>
 <dl class="py class">
-<dt id="metabu.metabu.Metabu">
-<em class="property">class </em><code class="sig-prename descclassname">metabu.metabu.</code><code class="sig-name descname">Metabu</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">alpha</span><span class="o">=</span><span class="default_value">0.5</span></em>, <em class="sig-param"><span class="n">lambda_reg</span><span class="o">=</span><span class="default_value">0.001</span></em>, <em class="sig-param"><span class="n">learning_rate</span><span class="o">=</span><span class="default_value">0.01</span></em>, <em class="sig-param"><span class="n">early_stopping_patience</span><span class="o">=</span><span class="default_value">10</span></em>, <em class="sig-param"><span class="n">early_stopping_criterion_ndcg</span><span class="o">=</span><span class="default_value">10</span></em>, <em class="sig-param"><span class="n">verbose</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">ncpus</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">device</span><span class="o">=</span><span class="default_value">'cpu'</span></em>, <em class="sig-param"><span class="n">seed</span><span class="o">=</span><span class="default_value">42</span></em><span class="sig-paren">)</span><a class="headerlink" href="#metabu.metabu.Metabu" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="metabu.Metabu">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">metabu.</span></span><span class="sig-name descname"><span class="pre">Metabu</span></span><a class="headerlink" href="#metabu.Metabu" title="Permalink to this definition">¶</a></dt>
+<dd><p>Metabu: learning meta-features.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Attributes</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>mds</strong><span class="classifier">sklearn.manifold.mds.MDS, default None</span></dt><dd><p>Multi-dimensional scaling model trained afted step 2.</p>
+</dd>
+<dt><strong>intrinsic_dim</strong><span class="classifier">int, default None</span></dt><dd><p>Intrinsic dimension of the benchmark, see last paragraph of section 4.</p>
+</dd>
+<dt><a class="reference internal" href="#metabu.Metabu.psi" title="metabu.Metabu.psi"><code class="xref py py-obj docutils literal notranslate"><span class="pre">psi</span></code></a><span class="classifier">np.ndarray, default None</span></dt><dd><p>Get the linear mapping psi.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="metabu.Metabu.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">alpha</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lambda_reg</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.001</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">learning_rate</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.01</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">early_stopping_patience</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">early_stopping_criterion_ndcg</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ncpus</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">device</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'cpu'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">seed</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">42</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#metabu.Metabu.__init__" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><dl class="simple">
-<dt><strong>alpha: float, default 0.5,</strong></dt><dd><p>the trade-off parameter in fused_gromov_wasserstein distance</p>
+<dt><strong>alpha: float, default 0.5,</strong></dt><dd><p>Trade-off parameter in FGW distance (eq. 1).</p>
 </dd>
-<dt><strong>lambda_reg: float, default 1e-3,</strong></dt><dd><p>the regularization weight</p>
+<dt><strong>lambda_reg: float, default 1e-3,</strong></dt><dd><p>L_1 regularization parameter (eq. 2).</p>
 </dd>
-<dt><strong>learning_rate: float, default 0.01,</strong></dt><dd><p>parameter of ADAM optimizer</p>
+<dt><strong>learning_rate: float, default 0.01,</strong></dt><dd><p>Learning rate used with ADAM optimizer.</p>
 </dd>
-<dt><strong>early_stopping_patience: int, default 10,</strong></dt><dd><p>the training is stopped when successively early_stopping_patience no improvement are observed</p>
+<dt><strong>early_stopping_patience: int, default 10,</strong></dt><dd><p>Number of iterations without improvement.</p>
 </dd>
-<dt><strong>early_stopping_criterion_ndcg: int, default 10,</strong></dt><dd><p>Only consider the highest early_stopping_criterion_ndcg scores in the ranking when computing ndcg. If None, use all outputs.</p>
+<dt><strong>early_stopping_criterion_ndcg: int, default 10,</strong></dt><dd><p>Trunc value of NDCG, e.g. <a class="reference external" href="mailto:NDCG&#37;&#52;&#48;10">NDCG<span>&#64;</span>10</a>.</p>
 </dd>
-<dt><strong>verbose: bool default True,</strong></dt><dd><p>output print during the training phase if set to True</p>
+<dt><strong>verbose: bool, default True,</strong></dt><dd><p>Print verbose.</p>
 </dd>
-<dt><strong>ncpus: int, default 1,</strong></dt><dd><p>number of cpu used to train the Linear Model</p>
+<dt><strong>ncpus: int, default 1,</strong></dt><dd><p>Number of cpu used, especially, to compute pairwise distance of the target representations.</p>
 </dd>
-<dt><strong>device: str, choice:[“cpu”, “gpu”] default “cpu”,</strong></dt><dd><p>used device</p>
+<dt><strong>device: str, default “cpu”,</strong></dt><dd><p>Device used by PyTorch (“cpu” or “gpu”).</p>
 </dd>
-<dt><strong>seed: int, default 42</strong></dt><dd><p>variable for reproducibility</p>
-</dd>
-</dl>
-</dd>
-<dt class="field-even">Attributes</dt>
-<dd class="field-even"><dl class="simple">
-<dt><strong>mds</strong><span class="classifier">sklearn.manifold._mds.MDS, default None</span></dt><dd><p>multi dimensional scaling</p>
-</dd>
-<dt><strong>intrinsic_dim</strong><span class="classifier">int, default None</span></dt><dd><p>the intrinsic dimension corresponding to the target representation</p>
-</dd>
-<dt><strong>model</strong><span class="classifier">torch.nn.Linear, default None</span></dt><dd><p>The linear mapping of basic representation to metabu representation</p>
+<dt><strong>seed: int, default 42</strong></dt><dd><p>Seed for reproducibility.</p>
 </dd>
 </dl>
-</dd>
-</dl>
-<p class="rubric">Methods</p>
-<table class="longtable docutils align-default">
-<colgroup>
-<col style="width: 10%" />
-<col style="width: 90%" />
-</colgroup>
-<tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="#metabu.metabu.Metabu.get_importances" title="metabu.metabu.Metabu.get_importances"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_importances</span></code></a>()</p></td>
-<td><p>Get the importance scores of each basic representation (each column of given the basic representation dataframe) according to the resulted metabu representation.</p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#metabu.metabu.Metabu.predict" title="metabu.metabu.Metabu.predict"><code class="xref py py-obj docutils literal notranslate"><span class="pre">predict</span></code></a>(basic_reprs)</p></td>
-<td><p>predict the metabu representation corresponding to the given basic representation</p></td>
-</tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#metabu.metabu.Metabu.train" title="metabu.metabu.Metabu.train"><code class="xref py py-obj docutils literal notranslate"><span class="pre">train</span></code></a>(basic_reprs, target_reprs, column_id)</p></td>
-<td><p>Train the Linear mapping of basic representation  to metabu representation</p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#metabu.metabu.Metabu.train_predict" title="metabu.metabu.Metabu.train_predict"><code class="xref py py-obj docutils literal notranslate"><span class="pre">train_predict</span></code></a>(basic_reprs, target_reprs, …)</p></td>
-<td><p>Train the Linear mapping of basic representation to metabu representation using all task in train_ids and predict the metabu representation corresponding to the  basic representation for both tasks in test_ids and train_ids</p></td>
-</tr>
-</tbody>
-</table>
-<dl class="py method">
-<dt id="metabu.metabu.Metabu.get_importances">
-<code class="sig-name descname">get_importances</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#metabu.metabu.Metabu.get_importances" title="Permalink to this definition">¶</a></dt>
-<dd><p>Get the importance scores of each basic representation (each column of given the basic representation dataframe)
-according to the resulted metabu representation. More the scores of one basic representation is high more this
-basic representation is important for the concerned algorithm.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Return importance</dt>
-<dd class="field-odd"><p>importance score and importance labels for each basic representation of task</p>
-</dd>
-<dt class="field-even">Return type</dt>
-<dd class="field-even"><p>Tuple[numpy.ndarray, List[str]]</p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py method">
-<dt id="metabu.metabu.Metabu.predict">
-<code class="sig-name descname">predict</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">basic_reprs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#metabu.metabu.Metabu.predict" title="Permalink to this definition">¶</a></dt>
-<dd><p>predict the metabu representation corresponding to the given basic representation</p>
+<dt class="sig sig-object py" id="metabu.Metabu.get_importances">
+<span class="sig-name descname"><span class="pre">get_importances</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.ndarray</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#metabu.Metabu.get_importances" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the importance scores of each basic representation column.</p>
+<p>The scores are extracted from the trained linear mapping psi.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><dl class="simple">
+<dt>importances: list of float</dt><dd><p>List of importance scores.</p>
+</dd>
+<dt>list_labels: list of str</dt><dd><p>List of corresponding basic representation column.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="metabu.Metabu.predict">
+<span class="sig-name descname"><span class="pre">predict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">basic_reprs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">pandas.core.frame.DataFrame</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">numpy.ndarray</span></span></span><a class="headerlink" href="#metabu.Metabu.predict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Predict the Metabu representations given basic representations.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>basic_reprs</strong> (<em>pandas.core.frame.DataFrame</em>) – The basic representation</p>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>basic_reprs</strong><span class="classifier">pandas.core.DataFrame</span></dt><dd><p>Basic representations.</p>
+</dd>
+</dl>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p>metabu representation: the metabu representation</p>
+<dd class="field-even"><dl class="simple">
+<dt><strong>metabu_reprs</strong><span class="classifier">np.ndarray</span></dt><dd><p>Metabu representations.</p>
 </dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>numpy.ndarray</p>
+</dl>
 </dd>
 </dl>
 </dd></dl>
 
-<dl class="py method">
-<dt id="metabu.metabu.Metabu.psi">
-<em class="property">property </em><code class="sig-name descname">psi</code><a class="headerlink" href="#metabu.metabu.Metabu.psi" title="Permalink to this definition">¶</a></dt>
-<dd><p>Get the Linear mapping model weight as umpy array</p>
+<dl class="py property">
+<dt class="sig sig-object py" id="metabu.Metabu.psi">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">psi</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">numpy.ndarray</span></em><a class="headerlink" href="#metabu.Metabu.psi" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the linear mapping psi.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Return model_weight</dt>
-<dd class="field-odd"><p>the weight of the Linear model</p>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>psi</strong><span class="classifier">numpy.ndarray</span></dt><dd><p>Weight matrix, representing the trained linear model.</p>
 </dd>
-<dt class="field-even">Return type</dt>
-<dd class="field-even"><p>np.ndarray</p>
+</dl>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py method">
-<dt id="metabu.metabu.Metabu.train">
-<code class="sig-name descname">train</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">basic_reprs</span></em>, <em class="sig-param"><span class="n">target_reprs</span></em>, <em class="sig-param"><span class="n">column_id</span></em><span class="sig-paren">)</span><a class="headerlink" href="#metabu.metabu.Metabu.train" title="Permalink to this definition">¶</a></dt>
-<dd><p>Train the Linear mapping of basic representation  to metabu representation</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>basic_reprs</strong> (<em>pandas.core.dataFrame</em>) – the basic representation</p></li>
-<li><p><strong>target_reprs</strong> (<em>pandas.core.dataFrame</em>) – the target representation</p></li>
-<li><p><strong>column_id</strong> (<em>str</em>) – name of column which content the id of each datasets or tasks in the target_reprs dataframe</p></li>
-</ul>
-</dd>
-<dt class="field-even">Return type</dt>
-<dd class="field-even"><p>None</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt id="metabu.metabu.Metabu.train_predict">
-<code class="sig-name descname">train_predict</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">basic_reprs</span></em>, <em class="sig-param"><span class="n">target_reprs</span></em>, <em class="sig-param"><span class="n">column_id</span></em>, <em class="sig-param"><span class="n">test_ids</span></em>, <em class="sig-param"><span class="n">train_ids</span></em><span class="sig-paren">)</span><a class="headerlink" href="#metabu.metabu.Metabu.train_predict" title="Permalink to this definition">¶</a></dt>
-<dd><p>Train the Linear mapping of basic representation to metabu representation using all task in train_ids and
-predict the metabu representation corresponding to the  basic representation for both tasks in test_ids and
-train_ids</p>
+<dt class="sig sig-object py" id="metabu.Metabu.train">
+<span class="sig-name descname"><span class="pre">train</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">basic_reprs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">pandas.core.frame.DataFrame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target_reprs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">pandas.core.frame.DataFrame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">column_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#metabu.Metabu.train" title="Permalink to this definition">¶</a></dt>
+<dd><p>Train the linear mapping psi.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>basic_reprs</strong> (<em>pandas.core.frame.DataFrame</em>) – the basic representation</p></li>
-<li><p><strong>target_reprs</strong> (<em>pandas.core.frame.DataFrame</em>) – the target representation</p></li>
-<li><p><strong>test_ids</strong> (<em>list</em>) – list of test tasks (not use on the training step)</p></li>
-<li><p><strong>test_ids</strong> – list of test tasks (not use on the training step)</p></li>
-<li><p><strong>train_ids</strong> (<em>list</em>) – list of train tasks (use on the training step)</p></li>
-<li><p><strong>column_id</strong> (<em>str</em>) – name of column which content the id of each datasets or tasks in the target_reprs dataframe</p></li>
-</ul>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>basic_reprs</strong><span class="classifier">pandas.core.DataFrame</span></dt><dd><p>Basic representations.</p>
 </dd>
-<dt class="field-even">Return metabu representation</dt>
-<dd class="field-even"><p>metabu representation corresponding to the training and testing tasks</p>
+<dt><strong>target_reprs</strong><span class="classifier">pandas.core.DataFrame</span></dt><dd><p>Target representations.</p>
 </dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>Tuple[numpy.ndarray, numpy.ndarray]</p>
+<dt><strong>column_id: str</strong></dt><dd><p>Name of the index column.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt>self</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="metabu.Metabu.train_predict">
+<span class="sig-name descname"><span class="pre">train_predict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">basic_reprs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">pandas.core.frame.DataFrame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target_reprs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">pandas.core.frame.DataFrame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">column_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">train_ids</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">test_ids</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.ndarray</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">numpy.ndarray</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#metabu.Metabu.train_predict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Learn the linear mapping psi using task instances in train_ids. Then predict Metabu representations separately for train and test instances.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>basic_reprs</strong><span class="classifier">pandas.core.DataFrame</span></dt><dd><p>Basic representations.</p>
+</dd>
+<dt><strong>target_reprs</strong><span class="classifier">pandas.core.DataFrame</span></dt><dd><p>Target representations.</p>
+</dd>
+<dt><strong>column_id: str</strong></dt><dd><p>Name of the index column.</p>
+</dd>
+<dt><strong>test_ids</strong><span class="classifier">list of int</span></dt><dd><p>List of testing instances.</p>
+</dd>
+<dt><strong>test_ids</strong><span class="classifier">list of int</span></dt><dd><p>List of training instances.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>metabu_train</strong><span class="classifier">numpy.ndarray</span></dt><dd><p>Metabu representation of training instances.</p>
+</dd>
+<dt><strong>metabu_test</strong><span class="classifier">numpy.ndarray</span></dt><dd><p>Metabu representation of testing instances.</p>
+</dd>
+</dl>
 </dd>
 </dl>
 </dd></dl>
@@ -267,7 +218,7 @@ train_ids</p>
 <h1>Cite Metabu<a class="headerlink" href="#cite-metabu" title="Permalink to this headline">¶</a></h1>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>@inproceedings<span class="o">{</span>rakotoarison2022learning,
  <span class="nv">title</span>       <span class="o">=</span> <span class="o">{</span>Learning meta-features <span class="k">for</span> Auto<span class="o">{</span>ML<span class="o">}}</span>,
- <span class="nv">author</span>      <span class="o">=</span> <span class="o">{</span>Herilalaina Rakotoarison and Louisot Milijaona and Andry RASOANAIVO and Michele Sebag and Marc Schoenauer<span class="o">}</span>,
+ <span class="nv">author</span>      <span class="o">=</span> <span class="o">{</span>Herilalaina Rakotoarison and Louisot Milijaona and Andry Rasoanaivo and Michele Sebag and Marc Schoenauer<span class="o">}</span>,
  <span class="nv">booktitle</span>   <span class="o">=</span> <span class="o">{</span>International Conference on Learning Representations<span class="o">}</span>,
  <span class="nv">year</span>        <span class="o">=</span> <span class="o">{</span><span class="m">2022</span><span class="o">}</span>,
  <span class="nv">url</span>         <span class="o">=</span> <span class="o">{</span>https://openreview.net/forum?id<span class="o">=</span>DTkEfj0Ygb8<span class="o">}</span>
@@ -275,33 +226,59 @@ train_ids</p>
 </pre></div>
 </div>
 </div>
+<div class="section" id="references">
+<h1>References<a class="headerlink" href="#references" title="Permalink to this headline">¶</a></h1>
+<div class="docutils container" id="id7">
+<dl class="citation">
+<dt class="label" id="id10"><span class="brackets">BCF+17</span></dt>
+<dd><p>Bernd Bischl, Giuseppe Casalicchio, Matthias Feurer, Frank Hutter, Michel Lang, Rafael G. Mantovani, Jan N. van Rijn, and Joaquin Vanschoren. OpenML Benchmarking Suites and the OpenML100. <em>arXiv:1708.03731 [cs, stat]</em>, August 2017. arXiv: 1708.03731 version: 1. URL: <a class="reference external" href="http://arxiv.org/abs/1708.03731">http://arxiv.org/abs/1708.03731</a> (visited on 2021-09-16).</p>
+</dd>
+<dt class="label" id="id8"><span class="brackets">FKE+15</span></dt>
+<dd><p>Matthias Feurer, Aaron Klein, Katharina Eggensperger, Jost Springenberg, Manuel Blum, and Frank Hutter. Efficient and Robust Automated Machine Learning. In <em>Advances in Neural Information Processing Systems</em>, volume 28. Curran Associates, Inc., 2015. URL: <a class="reference external" href="https://papers.nips.cc/paper/2015/hash/11d0e6287202fced83f79975ec59a3a6-Abstract.html">https://papers.nips.cc/paper/2015/hash/11d0e6287202fced83f79975ec59a3a6-Abstract.html</a> (visited on 2021-09-08).</p>
+</dd>
+<dt class="label" id="id9"><span class="brackets">FSE18</span></dt>
+<dd><p>Nicolo Fusi, Rishit Sheth, and Melih Elibol. Probabilistic Matrix Factorization for Automated Machine Learning. In <em>Advances in Neural Information Processing Systems</em>, volume 31. Curran Associates, Inc., 2018. URL: <a class="reference external" href="https://proceedings.neurips.cc/paper/2018/hash/b59a51a3c0bf9c5228fde841714f523a-Abstract.html">https://proceedings.neurips.cc/paper/2018/hash/b59a51a3c0bf9c5228fde841714f523a-Abstract.html</a> (visited on 2021-09-24).</p>
+</dd>
+<dt class="label" id="id13"><span class="brackets">HKV19</span></dt>
+<dd><p>Frank Hutter, Lars Kotthoff, and Joaquin Vanschoren, editors. <em>Automated Machine Learning: Methods, Systems, Challenges</em>. The Springer Series on Challenges in Machine Learning. Springer International Publishing, Cham, 2019. ISBN 9783030053178 9783030053185. URL: <a class="reference external" href="http://link.springer.com/10.1007/978-3-030-05318-5">http://link.springer.com/10.1007/978-3-030-05318-5</a> (visited on 2021-09-08), <a class="reference external" href="https://doi.org/10.1007/978-3-030-05318-5">doi:10.1007/978-3-030-05318-5</a>.</p>
+</dd>
+<dt class="label" id="id12"><span class="brackets">RGS+22</span></dt>
+<dd><p>Adriano Rivolli, Luís P. F. Garcia, Carlos Soares, Joaquin Vanschoren, and André C. P. L. F. de Carvalho. Meta-features for meta-learning. <em>Knowledge-Based Systems</em>, 240:108101, March 2022. URL: <a class="reference external" href="https://www.sciencedirect.com/science/article/pii/S0950705121011631">https://www.sciencedirect.com/science/article/pii/S0950705121011631</a> (visited on 2022-03-01), <a class="reference external" href="https://doi.org/10.1016/j.knosys.2021.108101">doi:10.1016/j.knosys.2021.108101</a>.</p>
+</dd>
+<dt class="label" id="id11"><span class="brackets">TCT+19</span></dt>
+<dd><p>Vayer Titouan, Nicolas Courty, Romain Tavenard, Chapel Laetitia, and Rémi Flamary. Optimal Transport for structured data with application on graphs. In <em>Proceedings of the 36th International Conference on Machine Learning</em>, 6275–6284. PMLR, May 2019. URL: <a class="reference external" href="https://proceedings.mlr.press/v97/titouan19a.html">https://proceedings.mlr.press/v97/titouan19a.html</a> (visited on 2022-02-01).</p>
+</dd>
+</dl>
+</div>
+</div>
 
 
-           </div>
+            <div class="clearer"></div>
           </div>
-          <footer>
-
-  <hr/>
-
-  <div role="contentinfo">
-    <p>&#169; Copyright 2022, Herilalaina Rakotoarison and Louisot Milijaona.</p>
-  </div>
-
-  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
-    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
-    provided by <a href="https://readthedocs.org">Read the Docs</a>.
-   
-
-</footer>
         </div>
       </div>
-    </section>
-  </div>
-  <script>
-      jQuery(function () {
-          SphinxRtdTheme.Navigation.enable(true);
-      });
-  </script> 
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <div>
+    <h3><a href="#">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">Metabu: Learning Meta-Features</a></li>
+<li><a class="reference internal" href="#installation">Installation</a></li>
+<li><a class="reference internal" href="#example">Example</a></li>
+<li><a class="reference internal" href="#experiments">Experiments</a></li>
+<li><a class="reference internal" href="#api">API</a></li>
+<li><a class="reference internal" href="#cite-metabu">Cite Metabu</a></li>
+<li><a class="reference internal" href="#references">References</a></li>
+</ul>
 
-</body>
+  </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2022, Rakotoarison, Milijaona, Rasoanaivon, Sebag, Schoenauer.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.5.0.
+    </div>
+  </body>
 </html>
