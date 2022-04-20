@@ -7,3 +7,6 @@ metabu/__pycache__
 __pycache__
 experiments/data/nearest/*
 ignore
+docs/make.bat
+docs/Makefile
+docs/doctrees

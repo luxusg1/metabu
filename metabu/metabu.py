@@ -10,6 +10,20 @@ from metabu.utils import get_cost_matrix, intrinsic_estimator, get_pca_importanc
 
 
 class Metabu:
+    """Metabu: learning meta-features.
+
+    Attributes
+    ----------
+
+    mds : sklearn.manifold.mds.MDS, default None
+        Multi-dimensional scaling model trained afted step 2.
+    intrinsic_dim : int, default None
+        Intrinsic dimension of the benchmark, see last paragraph of section 4.
+    psi : np.ndarray, default None
+        Linear mapping psi of the basic representation to the metabu representation, learned during step 3.
+
+   """
+
     def __init__(self,
                  alpha: float = 0.5,
                  lambda_reg: float = 1e-3,
@@ -20,6 +34,32 @@ class Metabu:
                  ncpus: int = 1,
                  device: str = "cpu",
                  seed: int = 42) -> None:
+        """
+
+        Parameters
+        ----------
+
+        alpha: float, default 0.5,
+            Trade-off parameter in FGW distance (eq. 1).
+        lambda_reg: float, default 1e-3,
+            L_1 regularization parameter (eq. 2).
+        learning_rate: float, default 0.01,
+            Learning rate used with ADAM optimizer.
+        early_stopping_patience: int, default 10,
+            Number of iterations without improvement.
+        early_stopping_criterion_ndcg: int, default 10,
+            Trunc value of NDCG, e.g. NDCG@10.
+        verbose: bool, default True,
+            Print verbose.
+        ncpus: int, default 1,
+            Number of cpu used, especially, to compute pairwise distance of the target representations.
+        device: str, default "cpu",
+            Device used by PyTorch ("cpu" or "gpu").
+        seed: int, default 42
+            Seed for reproducibility.
+
+        """
+
         self.early_stopping_criterion_ndcg = early_stopping_criterion_ndcg
         self.seed = seed
         self.ncpus = ncpus
@@ -42,7 +82,30 @@ class Metabu:
               basic_reprs: pd.DataFrame,
               target_reprs: pd.DataFrame,
               column_id: str) -> None:
+
+        """Train the linear mapping psi.
+
+        Parameters
+        ----------
+
+        basic_reprs : pandas.core.DataFrame
+            Basic representations.
+
+        target_reprs : pandas.core.DataFrame
+            Target representations.
+
+        column_id: str
+            Name of the index column.
+
+        Returns
+        -------
+
+        self
+
+        """
+
         list_ids = list(target_reprs[column_id].unique())
+
         task_id_has_target_representation = target_reprs.task_id.unique()
         basic_repr_labels = basic_reprs.columns
         self.basic_repr_labels = [_ for _ in basic_repr_labels if _ != column_id]
@@ -68,20 +131,77 @@ class Metabu:
             intrinsic_dim=self.intrinsic_dim,
             lambda_reg=self.lambda_reg,
             device=self.device, )
+        return self
 
     @property
     def psi(self) -> np.ndarray:
+        """Get the linear mapping psi.
+
+        Returns
+        -------
+
+        psi : numpy.ndarray
+            Weight matrix, representing the trained linear model.
+
+        """
         return self.model.weight.detach().cpu().numpy()
 
     def predict(self, basic_reprs: pd.DataFrame) -> np.ndarray:
+        """Predict the Metabu representations given basic representations.
+
+        Parameters
+        ----------
+
+        basic_reprs : pandas.core.DataFrame
+            Basic representations.
+
+        Returns
+        -------
+
+        metabu_reprs : np.ndarray
+            Metabu representations.
+
+        """
         return np.dot(basic_reprs[self.basic_repr_labels].values, self.psi.T)
 
     def train_predict(self,
                       basic_reprs: pd.DataFrame,
                       target_reprs: pd.DataFrame,
                       column_id: str,
-                      test_ids: list,
-                      train_ids: list) -> typing.Tuple[np.ndarray, np.ndarray]:
+                      train_ids: list,
+                      test_ids: list) -> typing.Tuple[np.ndarray, np.ndarray]:
+        """
+        Learn the linear mapping psi using task instances in train_ids. Then predict Metabu representations separately for train and test instances.
+
+        Parameters
+        ----------
+
+        basic_reprs : pandas.core.DataFrame
+            Basic representations.
+
+        target_reprs : pandas.core.DataFrame
+            Target representations.
+
+        column_id: str
+            Name of the index column.
+
+        test_ids : list of int
+            List of testing instances.
+
+        test_ids : list of int
+            List of training instances.
+
+        Returns
+        -------
+
+        metabu_train : numpy.ndarray
+            Metabu representation of training instances.
+
+        metabu_test : numpy.ndarray
+            Metabu representation of testing instances.
+
+        """
+
         basic_reprs_train = basic_reprs[basic_reprs[column_id].isin(train_ids)]
         basic_reprs_test = basic_reprs[basic_reprs[column_id].isin(test_ids)]
         target_reprs_train = target_reprs[target_reprs[column_id].isin(train_ids)]
@@ -90,6 +210,20 @@ class Metabu:
         return self.predict(basic_reprs_train), self.predict(basic_reprs_test)
 
     def get_importances(self) -> typing.Tuple[np.ndarray, typing.List[str]]:
+        """Get the importance scores of each basic representation column.
+
+        The scores are extracted from the trained linear mapping psi.
+
+        Returns
+        --------
+
+        importances: list of float
+            List of importance scores.
+
+        list_labels: list of str
+            List of corresponding basic representation column.
+
+        """
         imp = get_pca_importances(self.mds.embedding_)
         idx_best = imp.argmax()
         assert len(np.abs(self.psi[idx_best])) == len(self.basic_repr_labels)
