@@ -1,2 +1,2 @@
 name: "Landmark"
-basic_columns: sd
+basic_columns: NumberOfFeatures,NumberOfNumericFeatures,NumberOfCategoricalFeatures,NumberOfClasses,ClassProbabilityMax,LandmarkLDA,LandmarkNaiveBayes,LandmarkDecisionTree
