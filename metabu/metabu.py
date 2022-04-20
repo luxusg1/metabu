@@ -206,7 +206,7 @@ class Metabu:
         basic_reprs_test = basic_reprs[basic_reprs[column_id].isin(test_ids)]
         target_reprs_train = target_reprs[target_reprs[column_id].isin(train_ids)]
 
-        self.train(basic_reprs=basic_reprs, target_reprs=target_reprs_train, column_id=column_id)
+        self.train(basic_reprs=basic_reprs_train, target_reprs=target_reprs_train, column_id=column_id)
         return self.predict(basic_reprs_train), self.predict(basic_reprs_test)
 
     def get_importances(self) -> typing.Tuple[np.ndarray, typing.List[str]]:
