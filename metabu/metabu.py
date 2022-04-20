@@ -104,14 +104,13 @@ class Metabu:
 
         """
 
-        list_ids = list(target_reprs[column_id].unique())
-
+        list_ids = sorted(list(basic_reprs[column_id].unique()))
         task_id_has_target_representation = target_reprs.task_id.unique()
-        basic_repr_labels = basic_reprs.columns
-        self.basic_repr_labels = [_ for _ in basic_repr_labels if _ != column_id]
-
         if set(list_ids) != set(task_id_has_target_representation):
             raise ValueError('Inconsistent numbers of instances.')
+
+        basic_repr_labels = basic_reprs.columns
+        self.basic_repr_labels = [_ for _ in basic_repr_labels if _ != column_id]
 
         log.info("Compute pairwise distances of target representations.")
         cost_matrix = get_cost_matrix(target_repr=target_reprs, task_ids=list_ids, verbose=self.verbose)
@@ -130,7 +129,8 @@ class Metabu:
             alpha=self.alpha,
             intrinsic_dim=self.intrinsic_dim,
             lambda_reg=self.lambda_reg,
-            device=self.device, )
+            device=self.device,
+            list_ids=list_ids)
         return self
 
     @property

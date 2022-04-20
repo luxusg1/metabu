@@ -20,12 +20,13 @@ def train_fused_gromov_wasserstein(basic_representations,
                                    early_stopping_criterion_ndcg,
                                    alpha,
                                    lambda_reg,
-                                   device):
-    list_tasks = list(basic_representations.index.unique())
-    id_reprs = {id: np.where(basic_representations.index == id)[0] for id in list_tasks}
+                                   device,
+                                   list_ids):
+    # list_ids = list(basic_representations.index.unique())
+    id_reprs = {id: np.where(basic_representations.index == id)[0] for id in list_ids}
 
     torch.manual_seed(seed)
-    m = len(list_tasks)
+    m = len(list_ids)
     dim_in = basic_representations.shape[1]
 
     # Compute MDS
@@ -42,7 +43,7 @@ def train_fused_gromov_wasserstein(basic_representations,
     model = torch.nn.Linear(dim_in, intrinsic_dim, bias=False).to(device).float()
     optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
 
-    train_ids, valid_ids = train_test_split(list(range(len(list_tasks))), test_size=0.5, random_state=seed)
+    train_ids, valid_ids = train_test_split(list(range(len(list_ids))), test_size=0.5, random_state=seed)
 
     i = 0
     best_i = i
@@ -53,7 +54,7 @@ def train_fused_gromov_wasserstein(basic_representations,
     while no_improvement <= early_stopping:
         optimizer.zero_grad()
 
-        x_train = X[[np.random.choice(id_reprs[list_tasks[_]]) for _ in train_ids]]
+        x_train = X[[np.random.choice(id_reprs[list_ids[_]]) for _ in train_ids]]
         U_train = U[train_ids]
 
         assert not torch.isnan(x_train).any()
@@ -71,8 +72,8 @@ def train_fused_gromov_wasserstein(basic_representations,
         optimizer.step()
 
         with torch.no_grad():
-            x_train = X[[np.random.choice(id_reprs[list_tasks[id]]) for id in train_ids]]
-            x_valid = X[[np.random.choice(id_reprs[list_tasks[id]]) for id in valid_ids]]
+            x_train = X[[np.random.choice(id_reprs[list_ids[id]]) for id in train_ids]]
+            x_valid = X[[np.random.choice(id_reprs[list_ids[id]]) for id in valid_ids]]
             U_pred = distance_matrix(pts_src=model(x_valid), pts_dst=model(x_train))
             U_pred_train = distance_matrix(pts_src=model(x_train), pts_dst=model(x_train))
 
