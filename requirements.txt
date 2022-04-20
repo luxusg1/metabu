@@ -5,3 +5,5 @@ scikit-learn>=0.24.1
 POT>=0.7.0
 tqdm>=4.63.0
 
+# experiments
+hydra-core-1.1.2

@@ -1,0 +1,13 @@
+defaults:
+  - metafeature: metabu
+  - task: task1
+  - pipeline: adaboost
+
+openml_tid: 3
+
+data_path: ???
+path_basic_reprs: /home/tau/hrakotoa/code/final_submission/metabu/experiments/data/basic_representations.csv
+path_booststrap_reprs: ./experiments/data/bootstrap_representations.csv
+
+
+
