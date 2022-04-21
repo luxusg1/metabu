@@ -7,16 +7,20 @@ from metabu import Metabu
 from sklearn.metrics import pairwise_distances
 from metabu.utils import get_cost_matrix, get_ndcg_score
 
+
 def get_basic_representations(metafeature, path):
     basic_representations = pd.read_csv(os.path.join(path, "basic_representations.csv"))
     return basic_representations[["task_id"] + metafeature.basic_columns.split(",")]
+
 
 def get_bootstrap_representations(metafeature, path):
     basic_representations = pd.read_csv(os.path.join(path, "bootstrap_representations.csv"))
     return basic_representations[["task_id"] + metafeature.basic_columns.split(",")]
 
+
 def get_target_representations(pipeline, path):
-    return pd.read_csv(os.path.join(path, "top_preprocessed_target_representation", pipeline.name + "_target_representation.csv"))
+    return pd.read_csv(
+        os.path.join(path, "top_preprocessed_target_representation", pipeline.name + "_target_representation.csv"))
 
 
 def run_task1(cfg):
@@ -70,5 +74,17 @@ def run_task1(cfg):
         cfg.metafeature.name,
         cfg.task.ndcg,
         cfg.openml_tid,
-        get_ndcg_score(dist_pred=np.array([pred_dist[id_test][1:]]), dist_true=np.array([true_dist[id_test][1:]]), k=cfg.task.ndcg)
+        get_ndcg_score(dist_pred=np.array([pred_dist[id_test]]), dist_true=np.array([true_dist[id_test]]),
+                       k=cfg.task.ndcg)
     ))
+
+    if cfg.output_file is not None:
+        with open(cfg.output_file, 'a') as the_file:
+            the_file.write("{0},{1},{2},{3},{4}\n".format(
+                cfg.pipeline.name,
+                cfg.metafeature.name,
+                cfg.openml_tid,
+                cfg.task.ndcg,
+                get_ndcg_score(dist_pred=np.array([pred_dist[id_test]]), dist_true=np.array([true_dist[id_test]]),
+                               k=cfg.task.ndcg)
+            ))
