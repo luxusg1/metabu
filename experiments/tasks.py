@@ -97,3 +97,29 @@ def run_task1(cfg):
                 get_ndcg_score(dist_pred=np.array([pred_dist[id_test]]), dist_true=np.array([true_dist[id_test]]),
                                k=cfg.task.ndcg)
             ))
+
+
+def run_task2(cfg):
+    target_reprs = get_target_representations(pipeline=cfg.pipeline, path=cfg.data_path)
+    list_ids = sorted(list(target_reprs["task_id"].unique()))
+
+    if cfg.openml_tid not in list_ids:
+        raise Exception(f"OpenML task {cfg.openml_tid} does not have target representations.")
+
+    basic_reprs = get_basic_representations(metafeature=cfg.metafeature, path=cfg.data_path)
+    basic_reprs = basic_reprs[basic_reprs.task_id.isin(list_ids)]
+
+    if cfg.metafeature.name == "metabu":
+        train_ids = [_ for _ in list_ids if _ != cfg.openml_tid]
+        test_ids = [cfg.openml_tid]
+
+        basic_reprs = get_metabu_representations(cfg, basic_reprs, target_reprs, list_ids, train_ids, test_ids)
+
+    basic_reprs = basic_reprs.set_index("task_id")
+
+    pred_dist = pairwise_distances(basic_reprs.loc[list_ids])
+    id_test = list_ids.index(cfg.openml_tid)
+
+    # Get id neighbors
+    id_neighbors = pred_dist[id_test].argsort()[1:]
+
