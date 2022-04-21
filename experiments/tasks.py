@@ -36,7 +36,11 @@ def get_metabu_representations(cfg, basic_reprs, target_reprs, list_ids, train_i
         combined_basic_reprs[combined_basic_reprs.task_id.isin(test_ids)]
     ], axis=0)
 
-    metabu = Metabu(verbose=False, seed=cfg.seed)
+    metabu = Metabu(alpha=0.5,
+                    lambda_reg=1e-3,
+                    learning_rate=0.01,
+                    early_stopping_patience=20,
+                    early_stopping_criterion_ndcg=cfg.task.ndcg, verbose=False, seed=cfg.seed)
     repr_train, repr_test = metabu.train_predict(
         basic_reprs=combined_basic_reprs.drop(["boostrap"], axis=1),
         target_reprs=target_reprs,
@@ -93,5 +97,3 @@ def run_task1(cfg):
                 get_ndcg_score(dist_pred=np.array([pred_dist[id_test]]), dist_true=np.array([true_dist[id_test]]),
                                k=cfg.task.ndcg)
             ))
-
-
