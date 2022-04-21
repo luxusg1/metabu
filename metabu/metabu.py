@@ -111,6 +111,7 @@ class Metabu:
 
         basic_repr_labels = basic_reprs.columns
         self.basic_repr_labels = [_ for _ in basic_repr_labels if _ != column_id]
+        log.info("Considering {0} basic repr columns: ".format(len(self.basic_repr_labels)) + ",".join(self.basic_repr_labels))
 
         log.info("Compute pairwise distances of target representations.")
         cost_matrix = get_cost_matrix(target_repr=target_reprs, task_ids=list_ids, verbose=self.verbose)
@@ -185,11 +186,11 @@ class Metabu:
         column_id: str
             Name of the index column.
 
-        test_ids : list of int
-            List of testing instances.
+        train_ids : list of int
+            List of training instances.
 
         test_ids : list of int
-            List of training instances.
+            List of testing instances.
 
         Returns
         -------
@@ -202,12 +203,12 @@ class Metabu:
 
         """
 
-        basic_reprs_train = basic_reprs[basic_reprs[column_id].isin(train_ids)]
+        basic_reprs_train = basic_reprs # [basic_reprs[column_id].isin(train_ids)]
         basic_reprs_test = basic_reprs[basic_reprs[column_id].isin(test_ids)]
-        target_reprs_train = target_reprs[target_reprs[column_id].isin(train_ids)]
+        target_reprs_train = target_reprs # [target_reprs[column_id].isin(train_ids)]
 
         self.train(basic_reprs=basic_reprs_train, target_reprs=target_reprs_train, column_id=column_id)
-        return self.predict(basic_reprs_train), self.predict(basic_reprs_test)
+        return self.predict(basic_reprs_train[basic_reprs[column_id].isin(train_ids)]), self.predict(basic_reprs_test)
 
     def get_importances(self) -> typing.Tuple[np.ndarray, typing.List[str]]:
         """Get the importance scores of each basic representation column.
