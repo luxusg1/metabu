@@ -111,7 +111,7 @@ class Metabu:
 
         basic_repr_labels = basic_reprs.columns
         self.basic_repr_labels = [_ for _ in basic_repr_labels if _ != column_id]
-        log.info("Considering {0} basic repr columns: ".format(len(self.basic_repr_labels)) + ",".join(self.basic_repr_labels))
+        log.info("Considering {0} basic meta-features: ".format(len(self.basic_repr_labels)) + ",".join(self.basic_repr_labels))
 
         log.info("Compute pairwise distances of target representations.")
         cost_matrix = get_cost_matrix(target_repr=target_reprs, task_ids=list_ids, verbose=self.verbose)
