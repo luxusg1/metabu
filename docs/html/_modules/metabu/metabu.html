@@ -1,0 +1,273 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>metabu.metabu &#8212; Learning Meta-features for AutoML</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/readable.css" />
+    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/jquery.js"></script>
+    <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+  </head><body>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for metabu.metabu</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">logging</span> <span class="k">as</span> <span class="nn">log</span>
+<span class="kn">import</span> <span class="nn">typing</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">import</span> <span class="nn">torch</span>
+
+<span class="kn">from</span> <span class="nn">metabu.fgw</span> <span class="kn">import</span> <span class="n">train_fused_gromov_wasserstein</span>
+<span class="kn">from</span> <span class="nn">metabu.utils</span> <span class="kn">import</span> <span class="n">get_cost_matrix</span><span class="p">,</span> <span class="n">intrinsic_estimator</span><span class="p">,</span> <span class="n">get_pca_importances</span>
+
+
+<div class="viewcode-block" id="Metabu"><a class="viewcode-back" href="../../index.html#metabu.Metabu">[docs]</a><span class="k">class</span> <span class="nc">Metabu</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Metabu: learning meta-features.</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+
+<span class="sd">    mds : sklearn.manifold.mds.MDS, default None</span>
+<span class="sd">        Multi-dimensional scaling model trained afted step 2.</span>
+<span class="sd">    intrinsic_dim : int, default None</span>
+<span class="sd">        Intrinsic dimension of the benchmark, see last paragraph of section 4.</span>
+<span class="sd">    psi : np.ndarray, default None</span>
+<span class="sd">        Linear mapping psi of the basic representation to the metabu representation, learned during step 3.</span>
+
+<span class="sd">   &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="Metabu.__init__"><a class="viewcode-back" href="../../index.html#metabu.Metabu.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                 <span class="n">alpha</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">,</span>
+                 <span class="n">lambda_reg</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1e-3</span><span class="p">,</span>
+                 <span class="n">learning_rate</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.01</span><span class="p">,</span>
+                 <span class="n">early_stopping_patience</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span>
+                 <span class="n">early_stopping_criterion_ndcg</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span>
+                 <span class="n">verbose</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+                 <span class="n">ncpus</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+                 <span class="n">device</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;cpu&quot;</span><span class="p">,</span>
+                 <span class="n">seed</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">42</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+
+<span class="sd">        alpha: float, default 0.5,</span>
+<span class="sd">            Trade-off parameter in FGW distance (eq. 1).</span>
+<span class="sd">        lambda_reg: float, default 1e-3,</span>
+<span class="sd">            L_1 regularization parameter (eq. 2).</span>
+<span class="sd">        learning_rate: float, default 0.01,</span>
+<span class="sd">            Learning rate used with ADAM optimizer.</span>
+<span class="sd">        early_stopping_patience: int, default 10,</span>
+<span class="sd">            Number of iterations without improvement.</span>
+<span class="sd">        early_stopping_criterion_ndcg: int, default 10,</span>
+<span class="sd">            Trunc value of NDCG, e.g. NDCG@10.</span>
+<span class="sd">        verbose: bool, default True,</span>
+<span class="sd">            Print verbose.</span>
+<span class="sd">        ncpus: int, default 1,</span>
+<span class="sd">            Number of cpu used, especially, to compute pairwise distance of the target representations.</span>
+<span class="sd">        device: str, default &quot;cpu&quot;,</span>
+<span class="sd">            Device used by PyTorch (&quot;cpu&quot; or &quot;gpu&quot;).</span>
+<span class="sd">        seed: int, default 42</span>
+<span class="sd">            Seed for reproducibility.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">early_stopping_criterion_ndcg</span> <span class="o">=</span> <span class="n">early_stopping_criterion_ndcg</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">seed</span> <span class="o">=</span> <span class="n">seed</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ncpus</span> <span class="o">=</span> <span class="n">ncpus</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span> <span class="o">=</span> <span class="n">verbose</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">alpha</span> <span class="o">=</span> <span class="n">alpha</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lambda_reg</span> <span class="o">=</span> <span class="n">lambda_reg</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">learning_rate</span> <span class="o">=</span> <span class="n">learning_rate</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">early_stopping_patience</span> <span class="o">=</span> <span class="n">early_stopping_patience</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mds</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">intrinsic_dim</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">device</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">basicConfig</span><span class="p">(</span><span class="nb">format</span><span class="o">=</span><span class="s2">&quot;</span><span class="si">%(asctime)s</span><span class="s2">: </span><span class="si">%(message)s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">level</span><span class="o">=</span><span class="n">log</span><span class="o">.</span><span class="n">DEBUG</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">basicConfig</span><span class="p">(</span><span class="nb">format</span><span class="o">=</span><span class="s2">&quot;</span><span class="si">%(asctime)s</span><span class="s2"> : </span><span class="si">%(message)s</span><span class="s2">&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Metabu.train"><a class="viewcode-back" href="../../index.html#metabu.Metabu.train">[docs]</a>    <span class="k">def</span> <span class="nf">train</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+              <span class="n">basic_reprs</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span>
+              <span class="n">target_reprs</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span>
+              <span class="n">column_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+
+        <span class="sd">&quot;&quot;&quot;Train the linear mapping psi.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+
+<span class="sd">        basic_reprs : pandas.core.DataFrame</span>
+<span class="sd">            Basic representations.</span>
+
+<span class="sd">        target_reprs : pandas.core.DataFrame</span>
+<span class="sd">            Target representations.</span>
+
+<span class="sd">        column_id: str</span>
+<span class="sd">            Name of the index column.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+
+<span class="sd">        self</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">list_ids</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">basic_reprs</span><span class="p">[</span><span class="n">column_id</span><span class="p">]</span><span class="o">.</span><span class="n">unique</span><span class="p">()))</span>
+        <span class="n">task_id_has_target_representation</span> <span class="o">=</span> <span class="n">target_reprs</span><span class="o">.</span><span class="n">task_id</span><span class="o">.</span><span class="n">unique</span><span class="p">()</span>
+        <span class="k">if</span> <span class="nb">set</span><span class="p">(</span><span class="n">list_ids</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">set</span><span class="p">(</span><span class="n">task_id_has_target_representation</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Inconsistent numbers of instances.&#39;</span><span class="p">)</span>
+
+        <span class="n">basic_repr_labels</span> <span class="o">=</span> <span class="n">basic_reprs</span><span class="o">.</span><span class="n">columns</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">basic_repr_labels</span> <span class="o">=</span> <span class="p">[</span><span class="n">_</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">basic_repr_labels</span> <span class="k">if</span> <span class="n">_</span> <span class="o">!=</span> <span class="n">column_id</span><span class="p">]</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Considering </span><span class="si">{0}</span><span class="s2"> basic meta-features: &quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">basic_repr_labels</span><span class="p">))</span> <span class="o">+</span> <span class="s2">&quot;,&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">basic_repr_labels</span><span class="p">))</span>
+
+        <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Compute pairwise distances of target representations.&quot;</span><span class="p">)</span>
+        <span class="n">cost_matrix</span> <span class="o">=</span> <span class="n">get_cost_matrix</span><span class="p">(</span><span class="n">target_repr</span><span class="o">=</span><span class="n">target_reprs</span><span class="p">,</span> <span class="n">task_ids</span><span class="o">=</span><span class="n">list_ids</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">)</span>
+
+        <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Compute intrinsic dimension.&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">intrinsic_dim</span> <span class="o">=</span> <span class="n">intrinsic_estimator</span><span class="p">(</span><span class="n">cost_matrix</span><span class="p">)</span>
+
+        <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Train Metabu meta-features.&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">mds</span> <span class="o">=</span> <span class="n">train_fused_gromov_wasserstein</span><span class="p">(</span>
+            <span class="n">basic_representations</span><span class="o">=</span><span class="n">basic_reprs</span><span class="o">.</span><span class="n">set_index</span><span class="p">(</span><span class="n">column_id</span><span class="p">),</span>
+            <span class="n">pairwise_dist_z</span><span class="o">=</span><span class="n">cost_matrix</span><span class="p">,</span>
+            <span class="n">learning_rate</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">learning_rate</span><span class="p">,</span>
+            <span class="n">seed</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">seed</span><span class="p">,</span>
+            <span class="n">early_stopping</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">early_stopping_patience</span><span class="p">,</span>
+            <span class="n">early_stopping_criterion_ndcg</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">early_stopping_criterion_ndcg</span><span class="p">,</span>
+            <span class="n">alpha</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">alpha</span><span class="p">,</span>
+            <span class="n">intrinsic_dim</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">intrinsic_dim</span><span class="p">,</span>
+            <span class="n">lambda_reg</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">lambda_reg</span><span class="p">,</span>
+            <span class="n">device</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">,</span>
+            <span class="n">list_ids</span><span class="o">=</span><span class="n">list_ids</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span></div>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">psi</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Get the linear mapping psi.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+
+<span class="sd">        psi : numpy.ndarray</span>
+<span class="sd">            Weight matrix, representing the trained linear model.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">weight</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span>
+
+<div class="viewcode-block" id="Metabu.predict"><a class="viewcode-back" href="../../index.html#metabu.Metabu.predict">[docs]</a>    <span class="k">def</span> <span class="nf">predict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">basic_reprs</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Predict the Metabu representations given basic representations.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+
+<span class="sd">        basic_reprs : pandas.core.DataFrame</span>
+<span class="sd">            Basic representations.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+
+<span class="sd">        metabu_reprs : np.ndarray</span>
+<span class="sd">            Metabu representations.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">basic_reprs</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">basic_repr_labels</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">psi</span><span class="o">.</span><span class="n">T</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Metabu.train_predict"><a class="viewcode-back" href="../../index.html#metabu.Metabu.train_predict">[docs]</a>    <span class="k">def</span> <span class="nf">train_predict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                      <span class="n">basic_reprs</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span>
+                      <span class="n">target_reprs</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span>
+                      <span class="n">column_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+                      <span class="n">train_ids</span><span class="p">:</span> <span class="nb">list</span><span class="p">,</span>
+                      <span class="n">test_ids</span><span class="p">:</span> <span class="nb">list</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">typing</span><span class="o">.</span><span class="n">Tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Learn the linear mapping psi using task instances in train_ids. Then predict Metabu representations separately for train and test instances.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+
+<span class="sd">        basic_reprs : pandas.core.DataFrame</span>
+<span class="sd">            Basic representations.</span>
+
+<span class="sd">        target_reprs : pandas.core.DataFrame</span>
+<span class="sd">            Target representations.</span>
+
+<span class="sd">        column_id: str</span>
+<span class="sd">            Name of the index column.</span>
+
+<span class="sd">        train_ids : list of int</span>
+<span class="sd">            List of training instances.</span>
+
+<span class="sd">        test_ids : list of int</span>
+<span class="sd">            List of testing instances.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+
+<span class="sd">        metabu_train : numpy.ndarray</span>
+<span class="sd">            Metabu representation of training instances.</span>
+
+<span class="sd">        metabu_test : numpy.ndarray</span>
+<span class="sd">            Metabu representation of testing instances.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">basic_reprs_train</span> <span class="o">=</span> <span class="n">basic_reprs</span> <span class="c1"># [basic_reprs[column_id].isin(train_ids)]</span>
+        <span class="n">basic_reprs_test</span> <span class="o">=</span> <span class="n">basic_reprs</span><span class="p">[</span><span class="n">basic_reprs</span><span class="p">[</span><span class="n">column_id</span><span class="p">]</span><span class="o">.</span><span class="n">isin</span><span class="p">(</span><span class="n">test_ids</span><span class="p">)]</span>
+        <span class="n">target_reprs_train</span> <span class="o">=</span> <span class="n">target_reprs</span> <span class="c1"># [target_reprs[column_id].isin(train_ids)]</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">train</span><span class="p">(</span><span class="n">basic_reprs</span><span class="o">=</span><span class="n">basic_reprs_train</span><span class="p">,</span> <span class="n">target_reprs</span><span class="o">=</span><span class="n">target_reprs_train</span><span class="p">,</span> <span class="n">column_id</span><span class="o">=</span><span class="n">column_id</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">basic_reprs_train</span><span class="p">[</span><span class="n">basic_reprs</span><span class="p">[</span><span class="n">column_id</span><span class="p">]</span><span class="o">.</span><span class="n">isin</span><span class="p">(</span><span class="n">train_ids</span><span class="p">)]),</span> <span class="bp">self</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">basic_reprs_test</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Metabu.get_importances"><a class="viewcode-back" href="../../index.html#metabu.Metabu.get_importances">[docs]</a>    <span class="k">def</span> <span class="nf">get_importances</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">typing</span><span class="o">.</span><span class="n">Tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">typing</span><span class="o">.</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]:</span>
+        <span class="sd">&quot;&quot;&quot;Get the importance scores of each basic representation column.</span>
+
+<span class="sd">        The scores are extracted from the trained linear mapping psi.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        --------</span>
+
+<span class="sd">        importances: list of float</span>
+<span class="sd">            List of importance scores.</span>
+
+<span class="sd">        list_labels: list of str</span>
+<span class="sd">            List of corresponding basic representation column.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">imp</span> <span class="o">=</span> <span class="n">get_pca_importances</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mds</span><span class="o">.</span><span class="n">embedding_</span><span class="p">)</span>
+        <span class="n">idx_best</span> <span class="o">=</span> <span class="n">imp</span><span class="o">.</span><span class="n">argmax</span><span class="p">()</span>
+        <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">psi</span><span class="p">[</span><span class="n">idx_best</span><span class="p">]))</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">basic_repr_labels</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">psi</span><span class="p">[</span><span class="n">idx_best</span><span class="p">]),</span> <span class="bp">self</span><span class="o">.</span><span class="n">basic_repr_labels</span></div></div>
+</pre></div>
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2022, Rakotoarison, Milijaona, Rasoanaivon, Sebag, Schoenauer.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.5.0.
+    </div>
+  </body>
+</html>

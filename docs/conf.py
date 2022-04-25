@@ -36,7 +36,7 @@ extensions = [
     # "sphinx_autodoc_typehints",  # Automatically document param types (less noise in class signature)
     "numpydoc",
     'sphinxcontrib.bibtex',
-    # "sphinx.ext.linkcode",
+    "sphinx.ext.viewcode",
 ]
 
 numpydoc_show_class_members = False
@@ -74,7 +74,7 @@ autodoc_class_signature = "separated"
 import sphinx_readable_theme
 html_theme = 'readable'
 html_theme_path = [sphinx_readable_theme.get_html_theme_path()]
-
+html_logo = "mepro_headshot.png"
 
 html_theme_options = {
     # "display_github": True,
@@ -86,6 +86,14 @@ html_theme_options = {
     #'page_width': '1000px'
     # "sticky_navigation": True
 }
+
+html_context = {
+  'display_github': True,
+  'github_user': 'luxusg1',
+  'github_repo': 'Metabu',
+  'github_banner': True,
+}
+
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
