@@ -1,12 +1,15 @@
+import math
 import os
+
 import numpy as np
 import pandas as pd
+from ConfigSpace.read_and_write import json
+from sklearn.metrics import pairwise_distances
 
 from metabu import Metabu
-
-from sklearn.metrics import pairwise_distances
 from metabu.utils import get_cost_matrix, get_ndcg_score
 
+from .smac_wrapper import Runner
 
 def get_basic_representations(metafeature, path):
     basic_representations = pd.read_csv(os.path.join(path, "basic_representations.csv"))
@@ -22,6 +25,35 @@ def get_target_representations(pipeline, path):
     return pd.read_csv(
         os.path.join(path, "top_preprocessed_target_representation", pipeline.name + "_target_representation.csv"))
 
+
+def get_raw_target_representations(pipeline, path):
+    c = {"True": True, "False": False}
+    df_hp= pd.read_csv(
+        os.path.join(path, "top_raw_target_representation", pipeline + "_target_representation.csv")).drop(["predictive_accuracy"], axis=1)
+    if pipeline == "random_forest":
+        df_hp.classifier__bootstrap = df_hp.classifier__bootstrap.map(c).astype(bool)
+    if pipeline == "adaboost":
+        for columns_name in ['classifier__algorithm', 'imputation__strategy']:
+            df_hp[columns_name] = df_hp[columns_name].str.decode('utf-8')
+        df_hp.classifier__algorithm = np.where((df_hp.classifier__algorithm == 'SAMME_R'),
+                                               'SAMME.R', df_hp.classifier__algorithm)
+        df_hp = df_hp.astype({"classifier__base_estimator__max_depth": int,
+                              "classifier__learning_rate": float,
+                              "classifier__n_estimators": int})
+
+    if pipeline == "libsvm_svc":
+        for columns_name in ['classifier__kernel', 'imputation__strategy']:
+            df_hp[columns_name] = df_hp[columns_name].str.decode('utf-8')
+
+        df_hp = df_hp.astype({"classifier__C": float,
+                              "classifier__degree": int,
+                              "classifier__gamma": float,
+                              "classifier__coef0": float,
+                              "classifier__tol": float,
+                              "classifier__max_iter": int,
+                              "classifier__shrinking": bool})
+
+    return df_hp
 
 def get_metabu_representations(cfg, basic_reprs, target_reprs, list_ids, train_ids, test_ids):
     basic_reprs["boostrap"] = 0
@@ -40,7 +72,9 @@ def get_metabu_representations(cfg, basic_reprs, target_reprs, list_ids, train_i
                     lambda_reg=1e-3,
                     learning_rate=0.01,
                     early_stopping_patience=20,
-                    early_stopping_criterion_ndcg=cfg.task.ndcg, verbose=False, seed=cfg.seed)
+                    early_stopping_criterion_ndcg=cfg.task.ndcg,
+                    verbose=False,
+                    seed=cfg.seed)
     repr_train, repr_test = metabu.train_predict(
         basic_reprs=combined_basic_reprs.drop(["boostrap"], axis=1),
         target_reprs=target_reprs,
@@ -53,6 +87,12 @@ def get_metabu_representations(cfg, basic_reprs, target_reprs, list_ids, train_i
     metabu_reprs["task_id"] = combined_basic_reprs["task_id"].values
     metabu_reprs["boostrap"] = combined_basic_reprs["boostrap"].values
     return metabu_reprs[metabu_reprs.boostrap == 0].drop(["boostrap"], axis=1)
+
+
+def get_configuration_space(cfg):
+    with open(os.path.join(cfg.data_path, "configspace", "{}_configspace.json".format(cfg.pipeline.name)), 'r') as fh:
+        json_string = fh.read()
+        return json.read(json_string)
 
 
 def run_task1(cfg):
@@ -121,5 +161,23 @@ def run_task2(cfg):
     id_test = list_ids.index(cfg.openml_tid)
 
     # Get id neighbors
-    id_neighbors = pred_dist[id_test].argsort()[1:]
+    id_neighbors = [list_ids[_] for _ in pred_dist[id_test].argsort()[1:]][:cfg.task.ndcg]
+
+    hps = get_raw_target_representations(pipeline=cfg.pipeline.name, path=cfg.data_path)
+    hps = hps[hps.task_id.isin(id_neighbors)]
+    hps["weights"] = hps.task_id.map(lambda x: math.exp(-id_neighbors.index(x)))
+    hps["weights"] /= hps["weights"].sum()
+
+    idx = np.random.choice(hps.index, cfg.task.nb_iterations, p=hps.weights, replace=False)
+    cs = get_configuration_space(cfg)
+
+    run = Runner(pipeline=cfg.pipeline.name, config_space=cs, seed=cfg.seed)
+    results = run.exec(task_id=cfg.openml_tid, hps=hps.drop(["task_id", "weights"], axis=1).loc[idx].to_dict(orient="records"), counter=0)
+
+    print("Results with task_id:{}, meta-feature={}, and pipeline={}".format(results[0]["task_id"],
+                                                                             cfg.pipeline.name,
+                                                                             results[0]["pipeline"]))
+    for res in results:
+        print("Iter={}\n\t hp={}\n\t perf={}".format(res["hp_id"] + 1, res["hp"], res["performance"]))
+
 
