@@ -1,7 +1,6 @@
 import shutil
 from pathlib import Path
 
-import neptune.new as neptune
 import numpy as np
 import openml
 from ConfigSpace.configuration_space import Configuration
