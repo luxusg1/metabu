@@ -2,16 +2,14 @@
 
 ## Setting up the environment
 
-Download `data_metabu_iclr` on : https://drive.google.com/drive/folders/1TbiJRmBTdZ5kgXrLnJQKJ1WKvk5sb6c2?usp=sharing
+Download `data_metabu_iclr` at https://drive.google.com/drive/folders/1TbiJRmBTdZ5kgXrLnJQKJ1WKvk5sb6c2?usp=sharing
 
 ```bash
 # install dependencies
 pip install -r requirements.txt
 pip install -e .
 # extract data
-cd experiments
 unzip data_metabu_iclr.zip
-cd ..
 ```
 
 Configuration details are defined under `conf/`.
@@ -30,7 +28,7 @@ task: task1, task2
 ## Task 1
 
 ```bash
-$ python main.py task=task1 openml_tid=3 task.ndcg=15 metafeature=metabu data_path=${PWD}/experiments/data_metabu_iclr pipeline=adaboost
+$ python main.py task=task1 openml_tid=3 task.ndcg=15 metafeature=metabu data_path=${PWD}/data_metabu_iclr pipeline=adaboost
 
 # output
 Task 1:
@@ -39,7 +37,7 @@ Task 1:
 - OpenML task: 3
 - NDCG@15: 0.6666666666666666
 
-$ python main.py task=task1 openml_tid=3 task.ndcg=15 metafeature=autosklearn data_path=${PWD}/experiments/data_metabu_iclr pipeline=adaboost
+$ python main.py task=task1 openml_tid=3 task.ndcg=15 metafeature=autosklearn data_path=${PWD}/data_metabu_iclr pipeline=adaboost
 
 # output
 Task 1:
@@ -52,7 +50,7 @@ Task 1:
 ## Task 2
 
 ```bash
-$ python main.py task=task2 task.nb_iterations=5 openml_tid=3 metafeature=metabu pipeline=random_forest data_path=${PWD}/experiments/data_metabu_iclr/
+$ python main.py task=task2 task.nb_iterations=5 openml_tid=3 metafeature=metabu pipeline=random_forest data_path=${PWD}/data_metabu_iclr/
 
 # output
 Iter=1
