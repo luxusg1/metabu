@@ -9,3 +9,4 @@ tqdm>=4.63.0
 hydra-core==1.1.2
 smac==1.3
 openml>=0.12.2
+neptune-contrib>=0.28.1

@@ -27,32 +27,8 @@ def get_target_representations(pipeline, path):
 
 
 def get_raw_target_representations(pipeline, path):
-    c = {"True": True, "False": False}
     df_hp= pd.read_csv(
         os.path.join(path, "top_raw_target_representation", pipeline + "_target_representation.csv")).drop(["predictive_accuracy"], axis=1)
-    if pipeline == "random_forest":
-        df_hp.classifier__bootstrap = df_hp.classifier__bootstrap.map(c).astype(bool)
-    if pipeline == "adaboost":
-        for columns_name in ['classifier__algorithm', 'imputation__strategy']:
-            df_hp[columns_name] = df_hp[columns_name].str.decode('utf-8')
-        df_hp.classifier__algorithm = np.where((df_hp.classifier__algorithm == 'SAMME_R'),
-                                               'SAMME.R', df_hp.classifier__algorithm)
-        df_hp = df_hp.astype({"classifier__base_estimator__max_depth": int,
-                              "classifier__learning_rate": float,
-                              "classifier__n_estimators": int})
-
-    if pipeline == "libsvm_svc":
-        for columns_name in ['classifier__kernel', 'imputation__strategy']:
-            df_hp[columns_name] = df_hp[columns_name].str.decode('utf-8')
-
-        df_hp = df_hp.astype({"classifier__C": float,
-                              "classifier__degree": int,
-                              "classifier__gamma": float,
-                              "classifier__coef0": float,
-                              "classifier__tol": float,
-                              "classifier__max_iter": int,
-                              "classifier__shrinking": bool})
-
     return df_hp
 
 def get_metabu_representations(cfg, basic_reprs, target_reprs, list_ids, train_ids, test_ids):
