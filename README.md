@@ -14,10 +14,6 @@ pip install -r requirements.txt
 python setup.py install
 ```
 
-Use Singularity:
-* build *local* container with definition file `env/metabu.def`.
-* fetch *remote* container from (coming soon).
-
 ## Usage
 
 Simple to use:
@@ -36,7 +32,7 @@ metabu.get_importances()
 ```
 
 
-Try: `cd examples; python metabu_adaboost.py`
+Try with `cd examples; python metabu_adaboost.py`
 
 
 ## Experiments
