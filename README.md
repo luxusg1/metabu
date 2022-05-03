@@ -37,7 +37,7 @@ Try with `cd examples; python metabu_adaboost.py`
 
 ## Experiments
 
-> Script to reproduce experiments are available under the [**experiments** branch](https://github.com/luxusg1/metabu/tree/experiments).
+> Scripts to reproduce experiments are available under the [**experiments** branch](https://github.com/luxusg1/metabu/tree/experiments).
 
 
 ## Credits
