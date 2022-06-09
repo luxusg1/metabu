@@ -114,7 +114,7 @@ class Metabu:
         log.info("Considering {0} basic meta-features: ".format(len(self.basic_repr_labels)) + ",".join(self.basic_repr_labels))
 
         log.info("Compute pairwise distances of target representations.")
-        cost_matrix = get_cost_matrix(target_repr=target_reprs, task_ids=list_ids, verbose=self.verbose)
+        cost_matrix = get_cost_matrix(target_repr=target_reprs, task_ids=list_ids, column_id=column_id, verbose=self.verbose)
 
         log.info("Compute intrinsic dimension.")
         self.intrinsic_dim = intrinsic_estimator(cost_matrix)
