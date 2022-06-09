@@ -120,7 +120,7 @@ class Metabu:
 
         log.info("Compute pairwise distances of target representations.")
         cost_matrix = get_cost_matrix(target_repr=target_reprs, task_ids=list_ids, column_id=column_id,
-                                      pairwise_target_dist_func=self.pairwise_target_dist_func, verbose=self.verbose)
+                                      pairwise_target_dist_func=self.pairwise_target_dist_func, verbose=self.verbose, ncpus=self.ncpus)
 
         log.info("Compute intrinsic dimension.")
         self.intrinsic_dim = intrinsic_estimator(cost_matrix)
