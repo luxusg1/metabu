@@ -6,7 +6,7 @@ import pandas as pd
 import torch
 
 from metabu.fgw import train_fused_gromov_wasserstein
-from metabu.utils import get_cost_matrix, intrinsic_estimator, get_pca_importances
+from metabu.utils import get_cost_matrix, intrinsic_estimator, get_pca_importances, wasserstein_distance
 
 
 class Metabu:
@@ -31,6 +31,7 @@ class Metabu:
                  early_stopping_patience: int = 10,
                  early_stopping_criterion_ndcg: int = 10,
                  verbose: bool = True,
+                 pairwise_target_dist_func: typing.Callable = wasserstein_distance,
                  ncpus: int = 1,
                  device: str = "cpu",
                  seed: int = 42) -> None:
@@ -51,6 +52,8 @@ class Metabu:
             Trunc value of NDCG, e.g. NDCG@10.
         verbose: bool, default True,
             Print verbose.
+        pairwise_target_dist_func: Callable, default metabu.utils.wasserstein_distance,
+            Function to compute pairwise distance between target representations.
         ncpus: int, default 1,
             Number of cpu used, especially, to compute pairwise distance of the target representations.
         device: str, default "cpu",
@@ -72,6 +75,7 @@ class Metabu:
         self.mds = None
         self.intrinsic_dim = None
         self.device = torch.device(device)
+        self.pairwise_target_dist_func = pairwise_target_dist_func
 
         if verbose:
             log.basicConfig(format="%(asctime)s: %(message)s", level=log.DEBUG)
@@ -111,10 +115,12 @@ class Metabu:
 
         basic_repr_labels = basic_reprs.columns
         self.basic_repr_labels = [str(_) for _ in basic_repr_labels if _ != column_id]
-        log.info("Considering {0} basic meta-features: ".format(len(self.basic_repr_labels)) + ",".join(self.basic_repr_labels))
+        log.info("Considering {0} basic meta-features: ".format(len(self.basic_repr_labels)) + ",".join(
+            self.basic_repr_labels))
 
         log.info("Compute pairwise distances of target representations.")
-        cost_matrix = get_cost_matrix(target_repr=target_reprs, task_ids=list_ids, column_id=column_id, verbose=self.verbose)
+        cost_matrix = get_cost_matrix(target_repr=target_reprs, task_ids=list_ids, column_id=column_id,
+                                      pairwise_target_dist_func=self.pairwise_target_dist_func, verbose=self.verbose)
 
         log.info("Compute intrinsic dimension.")
         self.intrinsic_dim = intrinsic_estimator(cost_matrix)
@@ -203,9 +209,9 @@ class Metabu:
 
         """
 
-        basic_reprs_train = basic_reprs # [basic_reprs[column_id].isin(train_ids)]
+        basic_reprs_train = basic_reprs  # [basic_reprs[column_id].isin(train_ids)]
         basic_reprs_test = basic_reprs[basic_reprs[column_id].isin(test_ids)]
-        target_reprs_train = target_reprs # [target_reprs[column_id].isin(train_ids)]
+        target_reprs_train = target_reprs  # [target_reprs[column_id].isin(train_ids)]
 
         self.train(basic_reprs=basic_reprs_train, target_reprs=target_reprs_train, column_id=column_id)
         return self.predict(basic_reprs_train[basic_reprs[column_id].isin(train_ids)]), self.predict(basic_reprs_test)
