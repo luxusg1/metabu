@@ -105,7 +105,7 @@ class Metabu:
         """
 
         list_ids = sorted(list(basic_reprs[column_id].unique()))
-        task_id_has_target_representation = target_reprs.task_id.unique()
+        task_id_has_target_representation = target_reprs[column_id].unique()
         if set(list_ids) != set(task_id_has_target_representation):
             raise ValueError('Inconsistent numbers of instances.')
 
