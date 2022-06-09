@@ -48,16 +48,16 @@ def intrinsic_estimator(matrix_distance):
     return math.ceil(intrinsic)
 
 
-def get_cost_matrix(target_repr, task_ids, verbose, n_cpus=1):
+def get_cost_matrix(target_repr, task_ids, verbose, column_id, n_cpus=1):
     matrix_ot_distance = []
     for task_a in tqdm(task_ids, disable=not verbose):
         temp_distance = []
         p = Pool(n_cpus)
         params = [
-            (target_repr.loc[target_repr.task_id == task_a].drop(
-                ['task_id'], axis=1).values,
-             target_repr.loc[target_repr.task_id == task_b].drop(
-                 ['task_id'], axis=1).values
+            (target_repr.loc[target_repr[column_id] == task_a].drop(
+                [column_id], axis=1).values,
+             target_repr.loc[target_repr[column_id] == task_b].drop(
+                 [column_id], axis=1).values
              ) for task_b in task_ids
         ]
         temp_distance = p.map(wasserstein_distance, params)
