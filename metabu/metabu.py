@@ -118,7 +118,7 @@ class Metabu:
         log.info("Considering {0} basic meta-features: ".format(len(self.basic_repr_labels)) + ",".join(
             self.basic_repr_labels))
 
-        log.info("Compute pairwise distances of target representations.")
+        log.info("Compute pairwise distance of target representations.")
         cost_matrix = get_cost_matrix(target_repr=target_reprs, task_ids=list_ids, column_id=column_id,
                                       pairwise_target_dist_func=self.pairwise_target_dist_func, verbose=self.verbose, ncpus=self.ncpus)
 
