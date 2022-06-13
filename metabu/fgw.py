@@ -31,7 +31,6 @@ def train_fused_gromov_wasserstein(
     dim_in = basic_representations.shape[1]
 
     # Compute MDS
-    intrinsic_dim = 2
     mds = MDS(
         n_components=intrinsic_dim, random_state=seed, dissimilarity="precomputed"
     )
