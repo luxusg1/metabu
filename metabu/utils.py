@@ -19,7 +19,8 @@ def wasserstein_distance(distributions, return_map_matrix=False):
     a, b = np.ones((ns,)) / ns, np.ones((nt,)) / nt
     G0 = ot.emd(a, b, M)
 
-    if return_map_matrix: return (G0 * M).sum(), G0
+    if return_map_matrix:
+        return (G0 * M).sum(), G0
     return (G0 * M).sum()
 
 
@@ -36,7 +37,7 @@ def intrinsic_estimator(matrix_distance):
         muL.append(mu_i)
     muL = np.sort(muL)
     cutoff = int(np.floor(0.9 * len(muL)))
-    muL = muL[0:cutoff + 1]
+    muL = muL[0 : cutoff + 1]
     muL = [x if x > 0 else 1 + 10 ** (-3) for x in muL]
     muL = np.asarray([math.log(mu_i) for mu_i in muL]).reshape(-1, 1)
     step = 1 / N
@@ -48,17 +49,23 @@ def intrinsic_estimator(matrix_distance):
     return math.ceil(intrinsic)
 
 
-def get_cost_matrix(target_repr, task_ids, verbose, column_id, pairwise_target_dist_func, ncpus=1):
+def get_cost_matrix(
+    target_repr, task_ids, verbose, column_id, pairwise_target_dist_func, ncpus=1
+):
     matrix_ot_distance = []
     for task_a in tqdm(task_ids, disable=not verbose):
         temp_distance = []
         p = Pool(ncpus)
         params = [
-            (target_repr.loc[target_repr[column_id] == task_a].drop(
-                [column_id], axis=1).values,
-             target_repr.loc[target_repr[column_id] == task_b].drop(
-                 [column_id], axis=1).values
-             ) for task_b in task_ids
+            (
+                target_repr.loc[target_repr[column_id] == task_a]
+                .drop([column_id], axis=1)
+                .values,
+                target_repr.loc[target_repr[column_id] == task_b]
+                .drop([column_id], axis=1)
+                .values,
+            )
+            for task_b in task_ids
         ]
         temp_distance = p.map(pairwise_target_dist_func, params)
 

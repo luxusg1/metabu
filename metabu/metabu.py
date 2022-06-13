@@ -6,7 +6,12 @@ import pandas as pd
 import torch
 
 from metabu.fgw import train_fused_gromov_wasserstein
-from metabu.utils import get_cost_matrix, intrinsic_estimator, get_pca_importances, wasserstein_distance
+from metabu.utils import (
+    get_cost_matrix,
+    intrinsic_estimator,
+    get_pca_importances,
+    wasserstein_distance,
+)
 
 
 class Metabu:
@@ -24,17 +29,19 @@ class Metabu:
 
    """
 
-    def __init__(self,
-                 alpha: float = 0.5,
-                 lambda_reg: float = 1e-3,
-                 learning_rate: float = 0.01,
-                 early_stopping_patience: int = 10,
-                 early_stopping_criterion_ndcg: int = 10,
-                 verbose: bool = True,
-                 pairwise_target_dist_func: typing.Callable = wasserstein_distance,
-                 ncpus: int = 1,
-                 device: str = "cpu",
-                 seed: int = 42) -> None:
+    def __init__(
+        self,
+        alpha: float = 0.5,
+        lambda_reg: float = 1e-3,
+        learning_rate: float = 0.01,
+        early_stopping_patience: int = 10,
+        early_stopping_criterion_ndcg: int = 10,
+        verbose: bool = True,
+        pairwise_target_dist_func: typing.Callable = wasserstein_distance,
+        ncpus: int = 1,
+        device: str = "cpu",
+        seed: int = 42,
+    ) -> None:
         """
 
         Parameters
@@ -82,10 +89,9 @@ class Metabu:
         else:
             log.basicConfig(format="%(asctime)s : %(message)s")
 
-    def train(self,
-              basic_reprs: pd.DataFrame,
-              target_reprs: pd.DataFrame,
-              column_id: str) -> None:
+    def train(
+        self, basic_reprs: pd.DataFrame, target_reprs: pd.DataFrame, column_id: str
+    ) -> None:
 
         """Train the linear mapping psi.
 
@@ -111,24 +117,32 @@ class Metabu:
         list_ids = sorted(list(basic_reprs[column_id].unique()))
         task_id_has_target_representation = target_reprs[column_id].unique()
         if set(list_ids) != set(task_id_has_target_representation):
-            raise ValueError('Inconsistent numbers of instances.')
+            raise ValueError("Inconsistent numbers of instances.")
 
         basic_repr_labels = basic_reprs.columns
         self.basic_repr_labels = [str(_) for _ in basic_repr_labels if _ != column_id]
-        log.info("Considering {0} basic meta-features: ".format(len(self.basic_repr_labels)) + ",".join(
-            self.basic_repr_labels))
+        log.info(
+            "Considering {0} basic meta-features: ".format(len(self.basic_repr_labels))
+            + ",".join(self.basic_repr_labels)
+        )
 
         log.info("Compute pairwise distance of target representations.")
-        cost_matrix = get_cost_matrix(target_repr=target_reprs, task_ids=list_ids, column_id=column_id,
-                                      pairwise_target_dist_func=self.pairwise_target_dist_func, verbose=self.verbose, ncpus=self.ncpus)
+        self.cost_matrix = get_cost_matrix(
+            target_repr=target_reprs,
+            task_ids=list_ids,
+            column_id=column_id,
+            pairwise_target_dist_func=self.pairwise_target_dist_func,
+            verbose=self.verbose,
+            ncpus=self.ncpus,
+        )
 
         log.info("Compute intrinsic dimension.")
-        self.intrinsic_dim = intrinsic_estimator(cost_matrix)
+        self.intrinsic_dim = intrinsic_estimator(self.cost_matrix)
 
         log.info("Train Metabu meta-features.")
         self.model, self.mds = train_fused_gromov_wasserstein(
             basic_representations=basic_reprs.set_index(column_id),
-            pairwise_dist_z=cost_matrix,
+            pairwise_dist_z=self.cost_matrix,
             learning_rate=self.learning_rate,
             seed=self.seed,
             early_stopping=self.early_stopping_patience,
@@ -137,7 +151,8 @@ class Metabu:
             intrinsic_dim=self.intrinsic_dim,
             lambda_reg=self.lambda_reg,
             device=self.device,
-            list_ids=list_ids)
+            list_ids=list_ids,
+        )
         return self
 
     @property
@@ -171,12 +186,14 @@ class Metabu:
         """
         return np.dot(basic_reprs[self.basic_repr_labels].values, self.psi.T)
 
-    def train_predict(self,
-                      basic_reprs: pd.DataFrame,
-                      target_reprs: pd.DataFrame,
-                      column_id: str,
-                      train_ids: list,
-                      test_ids: list) -> typing.Tuple[np.ndarray, np.ndarray]:
+    def train_predict(
+        self,
+        basic_reprs: pd.DataFrame,
+        target_reprs: pd.DataFrame,
+        column_id: str,
+        train_ids: list,
+        test_ids: list,
+    ) -> typing.Tuple[np.ndarray, np.ndarray]:
         """
         Learn the linear mapping psi using task instances in train_ids. Then predict Metabu representations separately for train and test instances.
 
@@ -213,8 +230,15 @@ class Metabu:
         basic_reprs_test = basic_reprs[basic_reprs[column_id].isin(test_ids)]
         target_reprs_train = target_reprs  # [target_reprs[column_id].isin(train_ids)]
 
-        self.train(basic_reprs=basic_reprs_train, target_reprs=target_reprs_train, column_id=column_id)
-        return self.predict(basic_reprs_train[basic_reprs[column_id].isin(train_ids)]), self.predict(basic_reprs_test)
+        self.train(
+            basic_reprs=basic_reprs_train,
+            target_reprs=target_reprs_train,
+            column_id=column_id,
+        )
+        return (
+            self.predict(basic_reprs_train[basic_reprs[column_id].isin(train_ids)]),
+            self.predict(basic_reprs_test),
+        )
 
     def get_importances(self) -> typing.Tuple[np.ndarray, typing.List[str]]:
         """Get the importance scores of each basic representation column.

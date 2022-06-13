@@ -77,7 +77,12 @@ def distance_matrix(pts_src: torch.Tensor, pts_dst: torch.Tensor, p: int = 2):
     return distance
 
 
-def distance_gmm(mu_src: torch.Tensor, mu_dst: torch.Tensor, logvar_src: torch.Tensor, logvar_dst: torch.Tensor):
+def distance_gmm(
+    mu_src: torch.Tensor,
+    mu_dst: torch.Tensor,
+    logvar_src: torch.Tensor,
+    logvar_dst: torch.Tensor,
+):
     """
     Calculate a Wasserstein distance matrix between the gmm distributions with diagonal variances
     :param mu_src: [R, D] matrix, the means of R Gaussian distributions
@@ -110,7 +115,9 @@ def distance_gmm(mu_src: torch.Tensor, mu_dst: torch.Tensor, logvar_src: torch.T
 #     return distance_mean + distance_var
 
 
-def cost_mat(cost_s: torch.Tensor, cost_t: torch.Tensor, tran: torch.Tensor) -> torch.Tensor:
+def cost_mat(
+    cost_s: torch.Tensor, cost_t: torch.Tensor, tran: torch.Tensor
+) -> torch.Tensor:
     """
     Implement cost_mat for Gromov-Wasserstein discrepancy (GWD)
 
@@ -165,7 +172,10 @@ def fgw_discrepancy(mu, z_mu, logvar, z_logvar, device, beta):
     if torch.isnan(tran).sum() > 0:
         tran = (torch.ones(ns, nt) / (ns * nt)).to(device)
 
-    cost = beta * cost_mat(cost_posterior, cost_prior, tran.detach().data) + (1 - beta) * cost_pp
+    cost = (
+        beta * cost_mat(cost_posterior, cost_prior, tran.detach().data)
+        + (1 - beta) * cost_pp
+    )
     d_fgw = (cost * tran.detach().data).sum()
     return d_fgw
 
@@ -189,7 +199,10 @@ def fgw(source, target, device, alpha, M=None):
         tran = M
     dual = (torch.ones(ns, 1) / ns).to(device)
     for m in range(10):
-        cost = alpha * cost_mat(cost_source, cost_target, tran) + (1 - alpha) * cost_source_target
+        cost = (
+            alpha * cost_mat(cost_source, cost_target, tran)
+            + (1 - alpha) * cost_source_target
+        )
         kernel = torch.exp(-cost / torch.max(torch.abs(cost))) * tran
         b = p_t / (torch.t(kernel) @ dual)
         for i in range(5):
@@ -199,7 +212,10 @@ def fgw(source, target, device, alpha, M=None):
     if torch.isnan(tran).sum() > 0:
         tran = (torch.ones(ns, nt) / (ns * nt)).to(device)
 
-    cost = alpha * cost_mat(cost_source, cost_target, tran.detach().data) + (1 - alpha) * cost_source_target
+    cost = (
+        alpha * cost_mat(cost_source, cost_target, tran.detach().data)
+        + (1 - alpha) * cost_source_target
+    )
     d_fgw = (cost * tran.detach().data).sum()
     return d_fgw
 
@@ -215,20 +231,33 @@ def train(model, prior, train_loader, optimizer, device, epoch, args):
         recon_batch, z, mu, logvar = model(data)
         z_mu, z_logvar = prior()
         rec_loss = method.loss_function(recon_batch, data, args.loss_type)
-        reg_loss = args.gamma * fgw_discrepancy(mu, z_mu, logvar, z_logvar, device, args.beta)
+        reg_loss = args.gamma * fgw_discrepancy(
+            mu, z_mu, logvar, z_logvar, device, args.beta
+        )
         loss = rec_loss + reg_loss
         loss.backward()
         train_rec_loss += rec_loss.item()
         train_reg_loss += reg_loss.item()
         optimizer.step()
         if batch_idx % args.log_interval == 0:
-            print('Train Model Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}'.format(
-                epoch, batch_idx * len(data), len(train_loader.dataset),
-                       100. * batch_idx / len(train_loader), loss.item() / len(data)))
+            print(
+                "Train Model Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}".format(
+                    epoch,
+                    batch_idx * len(data),
+                    len(train_loader.dataset),
+                    100.0 * batch_idx / len(train_loader),
+                    loss.item() / len(data),
+                )
+            )
 
-    print('====> Epoch: {} Average RecLoss: {:.4f} RegLoss: {:.4f} TotalLoss: {:.4f}'.format(
-        epoch, train_rec_loss / len(train_loader.dataset), train_reg_loss / len(train_loader.dataset),
-               (train_rec_loss + train_reg_loss) / len(train_loader.dataset)))
+    print(
+        "====> Epoch: {} Average RecLoss: {:.4f} RegLoss: {:.4f} TotalLoss: {:.4f}".format(
+            epoch,
+            train_rec_loss / len(train_loader.dataset),
+            train_reg_loss / len(train_loader.dataset),
+            (train_rec_loss + train_reg_loss) / len(train_loader.dataset),
+        )
+    )
 
 
 def test(model, prior, test_loader, device, args):
@@ -243,16 +272,21 @@ def test(model, prior, test_loader, device, args):
             recon_batch, z, mu, logvar = model(data)
             z_mu, z_logvar = prior()
             rec_loss = method.loss_function(recon_batch, data, args.loss_type)
-            reg_loss = args.gamma * fgw_discrepancy(mu, z_mu, logvar, z_logvar, device, args.beta)
+            reg_loss = args.gamma * fgw_discrepancy(
+                mu, z_mu, logvar, z_logvar, device, args.beta
+            )
             test_rec_loss += rec_loss.item()
             test_reg_loss += reg_loss.item()
-            test_loss += (rec_loss.item() + reg_loss.item())
+            test_loss += rec_loss.item() + reg_loss.item()
 
     test_rec_loss /= len(test_loader.dataset)
     test_reg_loss /= len(test_loader.dataset)
     test_loss /= len(test_loader.dataset)
-    print('====> Test set RecLoss: {:.4f} RegLoss: {:.4f} TotalLoss: {:.4f}'.format(
-        test_rec_loss, test_reg_loss, test_loss))
+    print(
+        "====> Test set RecLoss: {:.4f} RegLoss: {:.4f} TotalLoss: {:.4f}".format(
+            test_rec_loss, test_reg_loss, test_loss
+        )
+    )
     return test_rec_loss, test_reg_loss, test_loss
 
 
@@ -260,16 +294,28 @@ def train_model(model, prior, train_loader, test_loader, device, args):
     model = model.to(device)
     prior = prior.to(device)
     loss_list = []
-    optimizer = optim.Adam(list(model.parameters()) + list(prior.parameters()), lr=args.lr, betas=(0.9, 0.999))
+    optimizer = optim.Adam(
+        list(model.parameters()) + list(prior.parameters()),
+        lr=args.lr,
+        betas=(0.9, 0.999),
+    )
     for epoch in range(1, args.epochs + 1):
         train(model, prior, train_loader, optimizer, device, epoch, args)
-        test_rec_loss, test_reg_loss, test_loss = test(model, prior, test_loader, device, args)
+        test_rec_loss, test_reg_loss, test_loss = test(
+            model, prior, test_loader, device, args
+        )
         loss_list.append([test_rec_loss, test_reg_loss, test_loss])
         if epoch % args.landmark_interval == 0:
-            evaluation.interpolation_2d(model, test_loader, device, epoch, args, prefix='rae')
+            evaluation.interpolation_2d(
+                model, test_loader, device, epoch, args, prefix="rae"
+            )
             prior.eval()
             z_p_mean, z_p_logvar = prior()
-            evaluation.sampling(model, device, epoch, args, prior=[z_p_mean, z_p_logvar], prefix='rae')
-            evaluation.reconstruction(model, test_loader, device, epoch, args, prefix='rae')
+            evaluation.sampling(
+                model, device, epoch, args, prior=[z_p_mean, z_p_logvar], prefix="rae"
+            )
+            evaluation.reconstruction(
+                model, test_loader, device, epoch, args, prefix="rae"
+            )
 
     return loss_list
